@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Jerry-Lab | Jeremiah Austin Hughes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Optional: custom fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #050510;
+      --bg-soft: #09091a;
+      --bg-card: #0c1020;
+      --accent: #22c55e;
+      --accent-soft: rgba(34, 197, 94, 0.18);
+      --accent-2: #38bdf8;
+      --text-main: #f9fafb;
+      --text-soft: #9ca3af;
+      --border-subtle: #1f2933;
+      --danger: #fb7185;
+
+      font-family: "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      color-scheme: dark;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at 10% -20%, #1e293b 0, transparent 55%),
+        radial-gradient(circle at 90% 120%, #0f766e 0, transparent 50%),
+        var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.6;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* subtle noise / scanline vibe */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.12;
+      background-image:
+        repeating-linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.07) 0,
+          rgba(255, 255, 255, 0.07) 1px,
+          transparent 1px,
+          transparent 3px
+        );
+      mix-blend-mode: soft-light;
+      z-index: -1;
+    }
+
+    a {
+      color: var(--accent-2);
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .shell {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 1.5rem clamp(1.2rem, 4vw, 2.25rem) 3rem;
+    }
+
+    /* NAVBAR */
+
+    header {
+      margin-bottom: 2rem;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .brand-main {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.95rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .brand-sub {
+      font-size: 0.8rem;
+      color: var(--text-soft);
+    }
+
+    .nav-links {
+      list-style: none;
+      display: flex;
+      gap: 1rem;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .nav-links a {
+      padding: 0.2rem 0;
+      position: relative;
+    }
+
+    .nav-links a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 0%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transition: width 0.2s ease-out;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    @media (max-width: 720px) {
+      nav {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .nav-links {
+        flex-wrap: wrap;
+      }
+    }
+
+    /* HERO */
+
+    .hero {
+      margin-top: 2rem;
+      display: grid;
+      grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.2fr);
+      gap: 2.5rem;
+      align-items: center;
+    }
+
+    @media (max-width: 880px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .eyebrow {
+      font-family: "JetBrains Mono", monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-size: 0.75rem;
+      color: var(--text-soft);
+      margin-bottom: 0.6rem;
+      opacity: 0.9;
+    }
+
+    .hero-title {
+      font-size: clamp(2.4rem, 4vw, 3.2rem);
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 0.6rem;
+    }
+
+    .hero-title span {
+      background: linear-gradient(120deg, var(--accent), var(--accent-2));
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .tagline {
+      font-size: 1rem;
+      color: var(--text-soft);
+      max-width: 35rem;
+      margin-bottom: 1.3rem;
+    }
+
+    .hero-meta {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.8rem;
+      color: var(--accent-2);
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .btn {
+      border-radius: 999px;
+      padding: 0.55rem 1.3rem;
+      font-size: 0.9rem;
+      border: 1px solid var(--accent-2);
+      background: rgba(15, 23, 42, 0.9);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      backdrop-filter: blur(14px);
+      transition: transform 0.12s ease-out, box-shadow 0.12s ease-out, background 0.12s ease-out;
+    }
+
+    .btn.primary {
+      border: none;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #020617;
+      font-weight: 600;
+      box-shadow: 0 12px 35px rgba(15, 118, 110, 0.4);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 40px rgba(15, 23, 42, 0.6);
+      background: rgba(15, 23, 42, 0.95);
+    }
+
+    .btn.primary:hover {
+      filter: brightness(1.05);
+    }
+
+    .btn span.icon {
+      font-size: 1rem;
+    }
+
+    /* Hero “panel” */
+
+    .hero-panel {
+      background: radial-gradient(circle at top right, rgba(56, 189, 248, 0.12), transparent 55%), var(--bg-card);
+      border-radius: 1.25rem;
+      border: 1px solid var(--border-subtle);
+      padding: 1.1rem 1.1rem 1rem;
+      box-shadow: 0 22px 55px rgba(3, 7, 18, 0.9);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-panel::before {
+      content: "JERRY-LAB CONSOLE";
+      position: absolute;
+      top: 0.65rem;
+      right: 1rem;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      color: rgba(148, 163, 184, 0.85);
+      text-transform: uppercase;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .panel-dots {
+      display: flex;
+      gap: 0.3rem;
+      font-size: 0.42rem;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #1f2937;
+    }
+
+    .dot.red { background: #f97373; }
+    .dot.yellow { background: #facc15; }
+    .dot.green { background: #4ade80; }
+
+    .panel-tag {
+      margin-left: auto;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.65rem;
+      color: var(--text-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+    }
+
+    .panel-body {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.8rem;
+      color: #e5e7eb;
+      background: radial-gradient(circle at 0 0, rgba(34, 197, 94, 0.15), transparent 55%);
+      border-radius: 0.8rem;
+      padding: 0.9rem;
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      min-height: 8.5rem;
+    }
+
+    .prompt {
+      color: var(--accent);
+    }
+
+    .panel-body .soft {
+      color: var(--text-soft);
+    }
+
+    .panel-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.8rem;
+    }
+
+    .tiny-tag {
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      padding: 0.2rem 0.55rem;
+      font-size: 0.7rem;
+      color: #e5e7eb;
+      background: rgba(15, 23, 42, 0.8);
+    }
+
+    /* SECTIONS */
+
+    main {
+      margin-top: 2.5rem;
+    }
+
+    section {
+      margin-top: 3rem;
+    }
+
+    .section-label {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      margin-bottom: 0.4rem;
+    }
+
+    h2 {
+      font-size: 1.6rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .section-sub {
+      font-size: 0.95rem;
+      color: var(--text-soft);
+      max-width: 42rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .grid {
+      display: grid;
+      gap: 1.4rem;
+    }
+
+    @media (min-width: 880px) {
+      .grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .grid-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    .card {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.98));
+      border-radius: 1.1rem;
+      padding: 1.15rem 1.1rem 1.1rem;
+      border: 1px solid rgba(31, 41, 55, 0.95);
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.85);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent 55%);
+      opacity: 0.75;
+      pointer-events: none;
+    }
+
+    .card-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-title-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.6rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .card-title {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .card-meta {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.7rem;
+      color: var(--text-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+    }
+
+    .card p {
+      font-size: 0.9rem;
+      color: #e5e7eb;
+      margin-top: 0.35rem;
+    }
+
+    .card-tags {
+      margin-top: 0.6rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .tag {
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      padding: 0.15rem 0.6rem;
+      font-size: 0.78rem;
+      color: #e5e7eb;
+      background: rgba(15, 23, 42, 0.75);
+    }
+
+    .tag.chip-light {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: #bbf7d0;
+    }
+
+    .skills-groups {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .skills-group h3 {
+      font-size: 0.95rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .pill-row .tag {
+      font-size: 0.77rem;
+    }
+
+    /* DJ section visual line */
+
+    .dj-divider {
+      height: 2px;
+      width: 100%;
+      background-image: linear-gradient(
+        90deg,
+        transparent,
+        var(--accent),
+        var(--accent-2),
+        var(--danger),
+        transparent
+      );
+      opacity: 0.7;
+      margin: 0.4rem 0 1rem;
+    }
+
+    /* CONTACT & FOOTER */
+
+    .contact-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      font-size: 0.9rem;
+    }
+
+    .contact-links span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    footer {
+      border-top: 1px solid var(--border-subtle);
+      padding: 1.6rem clamp(1.2rem, 4vw, 2.25rem) 1.8rem;
+      font-size: 0.78rem;
+      color: var(--text-soft);
+      background: rgba(2, 6, 23, 0.94);
+      backdrop-filter: blur(16px);
+      margin-top: 3rem;
+    }
+
+    footer .footer-row {
+      max-width: 1120px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+      align-items: center;
+      justify-content: space-between;
+    
+    }
+
+    .card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+  </style>
+</head>
+
+<body>
+  <div class="shell">
+    <header>
+      <nav>
+        <div class="brand">
+          <div class="brand-main">JERRY-LAB</div>
+          <div class="brand-sub">Embedded · IoT · Web · DJ</div>
+        </div>
+        <ul class="nav-links">
+          <li><a href="#projects">Projects</a></li>
+          <li><a href="#skills">Skills</a></li>
+          <li><a href="#dj">DJ / Mixes</a></li>
+          <li><a href="#experience">Experience</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+
+      <section class="hero">
+        <div>
+          <div class="eyebrow">// NYC · Computer Engineering</div>
+          <h1 class="hero-title">
+            I build <span>systems</span> you can touch, hear, and experience.
+          </h1>
+          <p class="tagline">
+            I’m <strong>Jeremiah Austin Hughes</strong> — a computer engineering student who loves
+            embedded systems, IoT, and web dashboards by day, and beat-matching tracks as a DJ by night.
+            I like when hardware, code, and music all talk to each other.
+          </p>
+          <p class="hero-meta">
+            currently experimenting with: esp32 · mqtt · next.js · vintage camcorder aesthetics
+          </p>
+          <div class="hero-buttons">
+            <a href="#projects" class="btn primary">
+              <span class="icon">⚡</span>
+              <span>View Engineering Projects</span>
+            </a>
+            <a href="#dj" class="btn">
+              <span class="icon">🎧</span>
+              <span>DJ / Mixes</span>
+            </a>
+            <a href="#contact" class="btn">
+              <span class="icon">📡</span>
+              <span>Contact</span>
+            </a>
+          </div>
+        </div>
+
+        <aside class="hero-panel" aria-label="Jerry-Lab status console">
+          <div class="panel-header">
+            <div class="panel-dots">
+              <div class="dot red"></div>
+              <div class="dot yellow"></div>
+              <div class="dot green"></div>
+            </div>
+            <div class="panel-tag">STATUS · ONLINE</div>
+          </div>
+          <div class="panel-body">
+            <div><span class="prompt">jerry@lab</span>:~$ whoami</div>
+            <div>embedded / web / dj hybrid</div>
+            <br/>
+            <div><span class="prompt">jerry@lab</span>:~$ focus</div>
+            <div class="soft">
+              → low-cost sensors · smart environments · real-time dashboards<br/>
+              → clean transitions · rhythm & energy in code and mixes
+            </div>
+
+            <div class="panel-tags">
+              <span class="tiny-tag">ESP32 · FreeRTOS</span>
+              <span class="tiny-tag">Raspberry Pi · MQTT</span>
+              <span class="tiny-tag">Next.js · React</span>
+              <span class="tiny-tag">Serato · Beatmatching</span>
+            </div>
+          </div>
+        </aside>
+      </section>
+    </header>
+
+    <main>
+      <!-- ABOUT -->
+      <section id="about">
+        <div class="section-label">about</div>
+        <h2>Who I am</h2>
+        <p class="section-sub">
+          I’m a Computer Engineering Technology student at City Tech in NYC with a background in
+          electromechanical technology. I like building things that move, sense, or react — from
+          ESP32-based sensors and smart terrariums to dashboards that visualize what’s happening
+          in real time. I also DJ, which influences how I think about flow, timing, and how people
+          experience technology.
+        </p>
+      </section>
+
+      <!-- PROJECTS -->
+      <section id="projects">
+        <div class="section-label">projects</div>
+  <h2>Selected engineering projects</h2>
+  <p class="section-sub">
+    A mix of embedded, IoT, networking labs, and hardware design. Most of these started as
+    class or self-study experiments and evolved into systems I could actually use or demo.
+  </p>
+
+  <!-- EMBEDDED & IOT -->
+  <div class="section-label" style="margin-top:1.5rem;">embedded & iot</div>
+  <div class="grid grid-3">
+    <!-- ESP32 Smart Terrarium -->
+    <article class="card">
+      <div class="card-inner">
+        <div class="card-title-row">
+          <div class="card-title">Smart Terrarium (ESP32 + MQTT)</div>
+          <div class="card-meta">iot · env sensing</div>
+        </div>
+        <p>
+          ESP32-based terrarium that monitors soil moisture and humidity, then publishes readings
+          to a Raspberry Pi MQTT broker. Designed to feed into a live web dashboard so plant
+          health feels like a “system status” screen.
+        </p>
+        <div class="card-tags">
+          <span class="tag chip-light">ESP32</span>
+          <span class="tag">C / ESP-IDF</span>
+          <span class="tag">MQTT</span>
+          <span class="tag">Raspberry Pi</span>
+        </div>
+        <!-- Optional GitHub link -->
+        <!-- <p style="margin-top:0.6rem; font-size:0.85rem;">
+          Code: <a href="YOUR_TERRARIUM_GITHUB_LINK" target="_blank" rel="noreferrer">GitHub repo</a>
+        </p> -->
+      </div>
+    </article>
+
+    <!-- Beach Quality / Weather Node -->
+     <a href="beach-node.html" class="card-link">
+            <article class="card">
+      <div class="card-inner">
+        <div class="card-title-row">
+          <div class="card-title">Beach Quality / Weather Node</div>
+          <div class="card-meta">research · sensors</div>
+        </div>
+        <p>
+          Low-cost node using Arduino / ESP32 and environmental sensors to capture air, water, and
+          soil conditions for Caribbean beach research. Focus on making the hardware affordable and
+          the data easy to work with for students.
+        </p>
+        <div class="card-tags">
+          <span class="tag chip-light">Arduino / ESP32</span>
+          <span class="tag">Env Sensors</span>
+          <span class="tag">Data Logging</span>
+        </div>
+        <!-- <p style="margin-top:0.6rem; font-size:0.85rem;">
+          Project notes: <a href="YOUR_DOC_OR_GITHUB" target="_blank" rel="noreferrer">read more</a>
+        </p> -->
+      </div>
+    </article>
+
+     </a>
+
+    <!-- ESP32 Security / Smart Home -->
+    <article class="card">
+      <div class="card-inner">
+        <div class="card-title-row">
+          <div class="card-title">ESP32 Smart Home / Security Experiments</div>
+          <div class="card-meta">prototype</div>
+        </div>
+        <p>
+          Prototyping door sensors, motion detection, and camera integration using ESP32 and
+          Raspberry Pi. Long-term goal: a smart home security system where every sensor reports
+          to a central dashboard.
+        </p>
+        <div class="card-tags">
+          <span class="tag chip-light">ESP32</span>
+          <span class="tag">PIR / Door Sensors</span>
+          <span class="tag">Python</span>
+          <span class="tag">Raspberry Pi</span>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <!-- NETWORKING / PACKET TRACER LABS -->
+  <div class="section-label" style="margin-top:2.2rem;">networking · packet tracer</div>
+  <p class="section-sub">
+    Labs built in Cisco Packet Tracer to practice real-world network engineer tasks like VLAN design,
+    NAT, and hospital-style infrastructure.
+  </p>
+
+  <div class="grid grid-2">
+    <!-- VLAN & Workgroup Design -->
+     <!-- VLAN Lab: Single & Multiple Switches -->
+    <a href="vlan-lab.html" class="card-link">
+            <article class="card">
+      <div class="card-inner">
+        <div class="card-title-row">
+          <div class="card-title">Creating VLANs on Single & Multiple Switches</div>
+          <div class="card-meta">packet tracer lab</div>
+        </div>
+        <p>
+          Configured VLANs on one and then two switches in Cisco Packet Tracer. Assigned IP
+          addresses to hosts, moved switch ports into different VLANs, and used 802.1Q trunking
+          between switches. Verified VLAN separation by pinging hosts in the same and different
+          VLANs to show how VLANs isolate traffic into separate broadcast domains.
+        </p>
+        <div class="card-tags">
+          <span class="tag chip-light">Cisco Packet Tracer</span>
+          <span class="tag">VLANs</span>
+          <span class="tag">802.1Q Trunking</span>
+          <span class="tag">Broadcast Domains</span>
+        </div>
+        <!-- Optional: link your .pkt or PDF writeup -->
+        <!--
+        <p style="margin-top:0.6rem; font-size:0.85rem;">
+          Lab write-up: <a href="LINK_TO_LAB_DOC_OR_PKT" target="_blank" rel="noreferrer">view lab</a>
+        </p>
+        -->
+      </div>
+    </article>
+    </a>
+
+
+    <!-- NAT & Screened Subnet Lab -->
+    <article class="card">
+      <div class="card-inner">
+        <div class="card-title-row">
+          <div class="card-title">NAT & Screened Subnet for Internet Access</div>
+          <div class="card-meta">packet tracer lab</div>
+        </div>
+        <p>
+          Configured a router with a screened subnet and NAT so internal hosts could safely
+          access the internet. Documented how private IPs are translated to a public IP and how
+          this protects devices on the internal network.
+        </p>
+        <div class="card-tags">
+          <span class="tag chip-light">NAT</span>
+          <span class="tag">Screened Subnet</span>
+          <span class="tag">Routing</span>
+        </div>
+        <!-- <p style="margin-top:0.6rem; font-size:0.85rem;">
+          Summary: <a href="LINK_TO_WRITEUP" target="_blank" rel="noreferrer">lab write-up</a>
+        </p> -->
+      </div>
+    </article>
+  </div>
+
+  <!-- HARDWARE DESIGN / PCB -->
+  <div class="section-label" style="margin-top:2.2rem;">hardware design · pcb</div>
+  <p class="section-sub">
+    Moving from breadboards to boards — capturing schematics, footprints, and layouts so my ESP32 and sensor
+    projects can live on custom PCBs instead of jumper wires.
+  </p>
+
+  <div class="grid grid-2">
+    <!-- ESP32 Sensor PCB -->
+    <article class="card">
+      <div class="card-inner">
+        <div class="card-title-row">
+          <div class="card-title">ESP32 Sensor PCB (in progress)</div>
+          <div class="card-meta">kicad</div>
+        </div>
+        <p>
+          Designing a custom PCB for an ESP32-based sensor node, including power regulation,
+          headers for I2C / UART sensors, and properly selected footprints for components
+          like SMD diodes and resistors.
+        </p>
+        <div class="card-tags">
+          <span class="tag chip-light">KiCad</span>
+          <span class="tag">ESP32 Module</span>
+          <span class="tag">SMD Footprints</span>
+        </div>
+        <!-- <p style="margin-top:0.6rem; font-size:0.85rem;">
+          Layout: <a href="LINK_TO_PCB_IMAGES_OR_REPO" target="_blank" rel="noreferrer">view PCB</a>
+        </p> -->
+      </div>
+    </article>
+
+    <!-- Hardware Prototyping -->
+    <article class="card">
+      <div class="card-inner">
+        <div class="card-title-row">
+          <div class="card-title">Hardware Prototyping & Testing</div>
+          <div class="card-meta">lab work</div>
+        </div>
+        <p>
+          Breadboarding and testing circuits for sensor nodes and control systems — verifying
+          voltage levels, signal integrity, and pin mappings before moving designs into PCB
+          layout tools.
+        </p>
+        <div class="card-tags">
+          <span class="tag chip-light">Breadboarding</span>
+          <span class="tag">Multimeter / Debug</span>
+          <span class="tag">Circuit Analysis</span>
+        </div>
+      </div>
+    </article>
+  </div>
+      </section>
+
+      <!-- SKILLS -->
+      <section id="skills">
+        <div class="section-label">skills</div>
+        <h2>What I work with</h2>
+        <p class="section-sub">
+          From low-level code that talks to sensors, to dashboards that talk to people.
+        </p>
+
+        <div class="skills-groups grid grid-3">
+          <div class="skills-group">
+            <h3>Languages</h3>
+            <div class="pill-row">
+              <span class="tag">C</span>
+              <span class="tag">C++</span>
+              <span class="tag">Python</span>
+              <span class="tag">Java</span>
+              <span class="tag">JavaScript</span>
+              <span class="tag">HTML / CSS</span>
+            </div>
+          </div>
+
+          <div class="skills-group">
+            <h3>Embedded & Hardware</h3>
+            <div class="pill-row">
+              <span class="tag">ESP32</span>
+              <span class="tag">Arduino</span>
+              <span class="tag">FreeRTOS</span>
+              <span class="tag">Digital & Analog Circuits</span>
+              <span class="tag">Sensors (temp, motion, env)</span>
+            </div>
+          </div>
+
+          <div class="skills-group">
+            <h3>Web, Tools & Networking</h3>
+            <div class="pill-row">
+              <span class="tag">Next.js (learning)</span>
+              <span class="tag">React</span>
+              <span class="tag">Git & GitHub</span>
+              <span class="tag">Linux</span>
+              <span class="tag">MATLAB</span>
+              <span class="tag">Cisco Packet Tracer</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- DJ / MIXES -->
+      <section id="dj">
+        <div class="section-label">dj / mixes</div>
+        <h2>Sound side of Jerry-Lab</h2>
+        <p class="section-sub">
+          I DJ as another way to engineer experiences — playing with tempo, key, and energy instead of
+          voltage and bits. I like ghetto house, techno, dancehall, soca, and anything that makes people move.
+        </p>
+
+        <div class="dj-divider"></div>
+
+        <div class="grid grid-2">
+          <article class="card">
+            <div class="card-inner">
+              <div class="card-title-row">
+                <div class="card-title">Setlists & Transitions</div>
+                <div class="card-meta">practice</div>
+              </div>
+              <p>
+                Working on smooth transitions using BPM and key matching, building story-like setlists,
+                and experimenting with how tracks can “talk” to visuals and lights in the future.
+              </p>
+              <div class="card-tags">
+                <span class="tag chip-light">Serato</span>
+                <span class="tag">Beatmatching</span>
+                <span class="tag">Keys & BPM</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="card-inner">
+              <div class="card-title-row">
+                <div class="card-title">Mix Links</div>
+                <div class="card-meta">online</div>
+              </div>
+              <p>
+                I share mixes online when I’m happy with how they flow.
+                Soon, this section will link directly to featured sets.
+              </p>
+              <div class="card-tags">
+                <span class="tag chip-light">SoundCloud</span>
+                <span class="tag">TikTok Clips</span>
+              </div>
+              <p style="margin-top:0.6rem; font-size:0.85rem; color:var(--text-soft);">
+                <!-- Replace these with your actual links -->
+                SoundCloud: <a href="https://soundcloud.com/" target="_blank" rel="noreferrer">coming soon</a><br/>
+                TikTok: <a href="https://www.tiktok.com/" target="_blank" rel="noreferrer">coming soon</a>
+              </p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- EXPERIENCE -->
+      <section id="experience">
+        <div class="section-label">experience</div>
+        <h2>Education & experience</h2>
+
+        <div class="grid grid-2">
+          <article class="card">
+            <div class="card-inner">
+              <div class="card-title-row">
+                <div class="card-title">City Tech · Computer Engineering Technology</div>
+                <div class="card-meta">student</div>
+              </div>
+              <p>
+                Courses in embedded systems, digital logic, control systems, networking, and linear algebra.
+                Previously completed an AAS in Electromechanical Technology, which gave me strong hands-on
+                experience with circuits and hardware.
+              </p>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="card-inner">
+              <div class="card-title-row">
+                <div class="card-title">Internships & Research Projects</div>
+                <div class="card-meta">ongoing</div>
+              </div>
+              <p>
+                Involved in projects around low-cost sensors, web development, and environmental monitoring.
+                I like being part of teams where hardware, software, and data all connect.
+              </p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- CONTACT -->
+      <section id="contact">
+        <div class="section-label">contact</div>
+        <h2>Let’s build / collab</h2>
+        <p class="section-sub">
+          I’m open to embedded / IoT roles, web dev work tied to hardware, and anything that mixes
+          engineering with creative energy. If you’re working on something in that space, I’d love to hear about it.
+        </p>
+
+        <article class="card">
+          <div class="card-inner">
+            <p style="font-size:0.95rem; margin-bottom:0.9rem;">
+              Best way to reach me is email. You can also find my code and future mixes here:
+            </p>
+            <div class="contact-links">
+              <!-- Replace placeholders with your real info -->
+              <span>📨 <a href="mailto:youremail@example.com">youremail@example.com</a></span>
+              <span>💻 <a href="https://github.com/" target="_blank" rel="noreferrer">GitHub</a></span>
+              <span>🔗 <a href="#" target="_blank" rel="noreferrer">LinkedIn</a></span>
+              <span>🎧 <a href="https://soundcloud.com/" target="_blank" rel="noreferrer">SoundCloud</a></span>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <footer>
+    <div class="footer-row">
+      <div>© <span id="year"></span> Jerry-Lab · Jeremiah Austin Hughes</div>
+      <div>Design: custom HTML/CSS · next step: live IoT dashboards.</div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

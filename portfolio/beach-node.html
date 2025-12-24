@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Jerry-Lab | Beach Quality & Weather Node</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #050510;
+      --bg-soft: #09091a;
+      --bg-card: #0c1020;
+      --accent: #22c55e;
+      --accent-soft: rgba(34, 197, 94, 0.18);
+      --accent-2: #38bdf8;
+      --text-main: #f9fafb;
+      --text-soft: #9ca3af;
+      --border-subtle: #1f2933;
+      font-family: "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background:
+        radial-gradient(circle at 10% -20%, #1e293b 0, transparent 55%),
+        radial-gradient(circle at 90% 120%, #0f766e 0, transparent 50%),
+        var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.7;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* noise / scanline vibe like main page */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.12;
+      background-image:
+        repeating-linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.07) 0,
+          rgba(255, 255, 255, 0.07) 1px,
+          transparent 1px,
+          transparent 3px
+        );
+      mix-blend-mode: soft-light;
+      z-index: -1;
+    }
+
+    a {
+      color: var(--accent-2);
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .shell {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 1.5rem clamp(1.2rem, 4vw, 2.25rem) 3rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 1.6rem;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    .brand-main {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.9rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .brand-sub {
+      font-size: 0.78rem;
+      color: var(--text-soft);
+    }
+
+    .back-link {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.45rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(12px);
+    }
+
+    .back-link span.icon {
+      font-size: 1rem;
+    }
+
+    main { margin-top: 1.5rem; }
+
+    .section-label {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      margin-bottom: 0.4rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.3rem;
+    }
+
+    h2 {
+      font-size: 1.4rem;
+      margin-bottom: 0.6rem;
+    }
+
+    h3 {
+      font-size: 1.05rem;
+      margin-top: 1rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .meta {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.8rem;
+      color: var(--accent-2);
+      margin-bottom: 1rem;
+    }
+
+    .intro {
+      font-size: 0.95rem;
+      color: var(--text-soft);
+      max-width: 48rem;
+      margin-bottom: 1.5rem;
+    }
+
+    section.block {
+      margin-top: 2rem;
+    }
+
+    .card {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.98));
+      border-radius: 1.1rem;
+      padding: 1.1rem 1.1rem 1rem;
+      border: 1px solid rgba(31, 41, 55, 0.95);
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.85);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 1.7rem;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent 55%);
+      opacity: 0.75;
+      pointer-events: none;
+    }
+
+    .card-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-inner p {
+      font-size: 0.9rem;
+      color: #e5e7eb;
+    }
+
+    .hero-img {
+      width: 100%;
+      border-radius: 0.9rem;
+      margin: 1rem 0 0.4rem;
+      border: 1px solid #1f2937;
+      display: block;
+    }
+
+    .caption {
+      font-size: 0.8rem;
+      color: var(--text-soft);
+    }
+
+    .img-grid {
+      display: grid;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    @media (min-width: 880px) {
+      .img-grid.cols-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .img-grid.cols-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    figure {
+      background: #020617;
+      border-radius: 0.9rem;
+      border: 1px solid rgba(15, 23, 42, 0.9);
+      overflow: hidden;
+    }
+
+    figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    figure figcaption {
+      font-size: 0.8rem;
+      color: var(--text-soft);
+      padding: 0.5rem 0.75rem 0.6rem;
+      border-top: 1px solid rgba(15, 23, 42, 0.9);
+    }
+
+    ul {
+      padding-left: 1.2rem;
+      font-size: 0.9rem;
+      color: #e5e7eb;
+    }
+
+    ul li { margin-bottom: 0.35rem; }
+
+    footer {
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 1rem;
+      margin-top: 2.4rem;
+      font-size: 0.78rem;
+      color: var(--text-soft);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+
+    @media (max-width: 720px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand">
+        <div class="brand-main">JERRY-LAB</div>
+        <div class="brand-sub">Beach Quality & Weather Node</div>
+      </div>
+      <a href="index.html#projects" class="back-link">
+        <span class="icon">←</span>
+        <span>Back to Projects</span>
+      </a>
+    </header>
+
+    <main>
+      <div class="section-label">embedded · research · drones</div>
+      <h1>Beach Quality & Weather Node</h1>
+      <div class="meta">
+        ESP32 / Arduino sensor platform · part of environmental monitoring using drones
+      </div>
+      <p class="intro">
+        As part of an environmental monitoring initiative, our team designed sensor systems and
+        drone concepts to monitor <strong>air, water, and soil</strong> around Caribbean beaches.
+        This page shows selected slides from the project presentation — objectives, drone platforms,
+        system diagrams, and future work — wrapped in my own portfolio styling.
+      </p>
+
+      <!-- OBJECTIVE -->
+      <section class="block">
+        <article class="card">
+          <div class="card-inner">
+            <h2>Project Objective</h2>
+            <p>
+              Design an affordable sensor and drone system that can be used by students and researchers
+              to collect environmental data (temperature, humidity, air quality, water quality, soil
+              conditions) around beaches — without needing expensive commercial hardware.
+            </p>
+            <img src="images/objective.png" class="hero-img" alt="Project objective slide">
+            <p class="caption">High-level objective slide from the project deck.</p>
+          </div>
+        </article>
+      </section>
+
+      <!-- TEAM -->
+      <section class="block">
+        <article class="card">
+          <div class="card-inner">
+            <h2>Team & Roles</h2>
+            <p>
+              This work was done as a collaborative research project. Each student focused on a part
+              of the system: drone design, sensor integration, simulation, control, and documentation.
+            </p>
+            <img src="images/beach/team.png" class="hero-img" alt="Team slide">
+            <p class="caption">Team overview slide, listing members and mentors.</p>
+          </div>
+        </article>
+      </section>
+
+      <!-- DRONES -->
+      <section class="block">
+        <article class="card">
+          <div class="card-inner">
+            <h2>HIPE 72 Drone Platforms</h2>
+            <p>
+              The monitoring system is built around three modular drone concepts, each tuned for a
+              different part of the environment:
+            </p>
+
+            <h3>HIPE 72 Poseidon · Air Quality Drone</h3>
+            <img src="images/poseidon.png" class="hero-img" alt="Poseidon drone slide">
+            <p class="caption">Poseidon concept for air quality sampling above the beach.</p>
+
+            <h3>HIPE 72 Neptune · Water Quality Drone</h3>
+            <img src="images/neptune.png" class="hero-img" alt="Neptune drone slide">
+            <p class="caption">Neptune concept focused on water quality readings offshore.</p>
+
+            <h3>HIPE 72 Helios · Mapping Drone</h3>
+            <img src="images/helios.png" class="hero-img" alt="Helios drone slide">
+            <p class="caption">Helios concept for mapping terrain and coastline features.</p>
+          </div>
+        </article>
+      </section>
+
+      <!-- SYSTEM DIAGRAMS -->
+      <section class="block">
+        <article class="card">
+          <div class="card-inner">
+            <h2>System Architecture & Node Design</h2>
+            <p>
+              The core idea is simple: sensors feed into an ESP32 or Arduino-based controller,
+              which then sends data for logging and analysis. Below are some of the block diagrams
+              and schematics used to plan the system.
+            </p>
+
+            <div class="img-grid cols-2">
+              <figure>
+                <img src="images/beach/diagram1.png" alt="Environmental monitoring block diagram">
+                <figcaption>High-level data flow from sensors to base station.</figcaption>
+              </figure>
+              <figure>
+                <img src="images/diagram2.png" alt="Drone system diagram">
+                <figcaption>Drone payload and communication architecture.</figcaption>
+              </figure>
+            </div>
+
+            <div class="img-grid" style="margin-top:1rem;">
+              <figure>
+                <img src="images/schematic.png" alt="ESP32 sensor node schematic">
+                <figcaption>Example of an ESP32-based sensor node schematic.</figcaption>
+              </figure>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <!-- BUDGET -->
+      <section class="block">
+        <article class="card">
+          <div class="card-inner">
+            <h2>Cost & Accessibility</h2>
+            <p>
+              One of the main constraints was cost. The budget slide breaks down how a multi-drone
+              system can be built using off-the-shelf components, focusing on:
+            </p>
+            <ul>
+              <li>Airframe hardware and motors</li>
+              <li>Sensors and microcontrollers (Arduino / ESP32)</li>
+              <li>Radio/telemetry modules and batteries</li>
+            </ul>
+            <img src="images/beach/budget.png" class="hero-img" alt="Budget slide">
+            <p class="caption">Budget breakdown for hardware and components.</p>
+          </div>
+        </article>
+      </section>
+
+      <!-- TOOLS & PROCESS -->
+      <section class="block">
+        <article class="card">
+          <div class="card-inner">
+            <h2>Tools, Simulation & Process</h2>
+            <p>
+              The project combined mechanical design, electronics, and simulation:
+            </p>
+            <ul>
+              <li>CAD and design tools for airframes</li>
+              <li>Arduino IDE / ESP32 environment for firmware</li>
+              <li>Simulation tools for flight and control tuning</li>
+            </ul>
+            <div class="img-grid cols-2">
+              <figure>
+                <img src="images/beach/design.png" alt="Design process slide">
+                <figcaption>Design and iteration process from concept to prototype.</figcaption>
+              </figure>
+              <figure>
+                <img src="images/beach/tools.png" alt="Tools slide">
+                <figcaption>Tools and software used throughout the project.</figcaption>
+              </figure>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <!-- FUTURE WORK -->
+      <section class="block">
+        <article class="card">
+          <div class="card-inner">
+            <h2>Future Work</h2>
+            <p>
+              Next steps for the project include:
+            </p>
+            <ul>
+              <li>Building and flight-testing physical prototypes</li>
+              <li>Integrating live telemetry with web dashboards</li>
+              <li>Expanding sensor types (gas sensors, turbidity, etc.)</li>
+              <li>Deploying multiple nodes along a coastline for higher coverage</li>
+            </ul>
+            <img src="images/beach/future.png" class="hero-img" alt="Future work slide">
+            <p class="caption">Planned improvements and extensions to the system.</p>
+          </div>
+        </article>
+      </section>
+
+      <!-- CONCLUSION -->
+      <section class="block">
+        <article class="card">
+          <div class="card-inner">
+            <h2>What This Project Means to Me</h2>
+            <p>
+              This project is where my interests line up: embedded systems, IoT, and real-world
+              impact. It pushed me to think not just about getting sensors to work, but about how
+              students and communities could actually use a system like this to monitor the
+              environment around them.
+            </p>
+            <img src="images/beach/conclusion.png" class="hero-img" alt="Conclusion slide">
+            <p class="caption">Closing slide summarizing impact and results.</p>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <footer>
+      <div>© <span id="year"></span> Jerry-Lab · Beach Quality & Weather Node</div>
+      <div><a href="index.html#projects">Back to main portfolio</a></div>
+    </footer>
+  </div>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

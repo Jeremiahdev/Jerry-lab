@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Jerry-Lab | VLAN Lab – Single & Multiple Switches</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #050510;
+      --bg-soft: #09091a;
+      --bg-card: #0c1020;
+      --accent: #22c55e;
+      --accent-2: #38bdf8;
+      --text-main: #f9fafb;
+      --text-soft: #9ca3af;
+      --border-subtle: #1f2933;
+      font-family: "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background:
+        radial-gradient(circle at 10% -20%, #1e293b 0, transparent 55%),
+        radial-gradient(circle at 90% 120%, #0f766e 0, transparent 50%),
+        var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.12;
+      background-image:
+        repeating-linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.07) 0,
+          rgba(255, 255, 255, 0.07) 1px,
+          transparent 1px,
+          transparent 3px
+        );
+      mix-blend-mode: soft-light;
+      z-index: -1;
+    }
+
+    a { color: var(--accent-2); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .shell {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 1.5rem clamp(1.2rem, 4vw, 2.25rem) 3rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .brand-main {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.9rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .brand-sub {
+      font-size: 0.78rem;
+      color: var(--text-soft);
+    }
+
+    .back-link {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.4rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    .back-link span.icon {
+      font-size: 1rem;
+    }
+
+    main {
+      margin-top: 1.5rem;
+    }
+
+    .section-label {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      margin-bottom: 0.4rem;
+    }
+
+    h1 {
+      font-size: 1.9rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .meta {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.8rem;
+      color: var(--accent-2);
+      margin-bottom: 1rem;
+    }
+
+    .intro {
+      font-size: 0.95rem;
+      color: var(--text-soft);
+      max-width: 48rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card {
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.14), transparent 55%), var(--bg-card);
+      border-radius: 1rem;
+      border: 1px solid var(--border-subtle);
+      padding: 1.1rem 1.1rem 1rem;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.85);
+      margin-bottom: 1.7rem;
+    }
+
+    .card h2 {
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .card p {
+      font-size: 0.9rem;
+      color: #e5e7eb;
+    }
+
+    .image-grid {
+      display: grid;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    @media (min-width: 880px) {
+      .image-grid.cols-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    figure {
+      background: #020617;
+      border-radius: 0.75rem;
+      border: 1px solid rgba(15, 23, 42, 0.9);
+      overflow: hidden;
+    }
+
+    figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    figcaption {
+      font-size: 0.8rem;
+      color: var(--text-soft);
+      padding: 0.5rem 0.7rem 0.65rem;
+      border-top: 1px solid rgba(15, 23, 42, 0.9);
+    }
+
+    .steps-list {
+      font-size: 0.9rem;
+      color: #e5e7eb;
+      padding-left: 1.1rem;
+    }
+
+    .steps-list li {
+      margin-bottom: 0.35rem;
+    }
+
+    footer {
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 1rem;
+      margin-top: 2rem;
+      font-size: 0.78rem;
+      color: var(--text-soft);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div>
+        <div class="brand-main">JERRY-LAB</div>
+        <div class="brand-sub">VLAN Lab · Single & Multiple Switches</div>
+      </div>
+      <a href="index.html#projects" class="back-link">
+        <span class="icon">←</span>
+        <span>Back to portfolio</span>
+      </a>
+    </header>
+
+    <main>
+      <div class="section-label">packet tracer · networking</div>
+      <h1>Creating VLANs on a Single & Multiple Switches</h1>
+      <div class="meta">
+        Lab: VLANs, trunking (802.1Q), and verifying traffic isolation with pings
+      </div>
+      <p class="intro">
+        In this lab, I used Cisco Packet Tracer to create and configure Virtual LANs (VLANs) on
+        both a single switch and a two-switch network. By assigning hosts into different VLANs,
+        configuring a trunk link, and testing with pings, I verified how VLANs split the network
+        into separate broadcast domains and control which hosts can talk to each other.
+      </p>
+
+      <!-- Intro & Objectives -->
+      <section class="card">
+        <h2>Lab Goals</h2>
+        <p>
+          • Configure VLANs on a single switch and assign specific ports to each VLAN.<br>
+          • Extend VLANs across two switches using an 802.1Q trunk link.<br>
+          • Use pings to verify that devices in different VLANs cannot communicate directly.<br>
+          • Observe how VLANs reduce broadcast domains and organize traffic.
+        </p>
+      </section>
+
+      <!-- Network 1 -->
+      <section class="card">
+        <h2>Network 1 – Single Switch VLANs</h2>
+        <ul class="steps-list">
+          <li>Assigned IP addresses to each host on the first network.</li>
+          <li>Created VLANs (for example, VLAN 2 and VLAN 3) on the switch.</li>
+          <li>Moved specific switch ports into each VLAN.</li>
+          <li>Used ping tests to confirm that hosts in different VLANs could no longer reach each other.</li>
+        </ul>
+
+        <div class="image-grid cols-2">
+          <figure>
+            <img src="images/vlan-step1-ips.png" alt="Packet Tracer diagram showing hosts with assigned IP addresses">
+            <figcaption>Step 1: Assigning IP addresses to all hosts on Network 1.</figcaption>
+          </figure>
+          <figure>
+            <img src="images/vlan-step2-vlan2.png" alt="Switch configuration window setting ports to VLAN 2">
+            <figcaption>Step 2: Moving ports 1–2 into VLAN 2 and verifying with the VLAN display command.</figcaption>
+          </figure>
+          <figure>
+            <img src="images/vlan-step3-vlan3.png" alt="Ports 3–4 assigned to another VLAN">
+            <figcaption>Step 3: Assigning ports 3–4 to a different VLAN and confirming separation.</figcaption>
+          </figure>
+          <figure>
+            <img src="images/vlan-step4-ping-fail.png" alt="Ping failing between PCs on different VLANs">
+            <figcaption>Step 4: Ping from PC1 to PC3 fails, proving VLAN isolation is working correctly.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <!-- Network 2 + trunk -->
+      <section class="card">
+        <h2>Network 2 – VLANs Across Two Switches</h2>
+        <ul class="steps-list">
+          <li>Configured IP addresses for hosts on the second network and verified connectivity.</li>
+          <li>Created the same VLANs on the second switch and assigned the appropriate ports.</li>
+          <li>Tested pings between hosts in different VLANs to confirm separation.</li>
+          <li>Connected the two switches with a trunk link so VLAN tags could pass between them.</li>
+        </ul>
+
+        <div class="image-grid cols-2">
+          <figure>
+            <img src="images/vlan-network2-ips.png" alt="Second network with hosts and IP addresses configured">
+            <figcaption>Network 2: IP addresses configured and initial connectivity checked.</figcaption>
+          </figure>
+          <figure>
+            <img src="images/vlan-trunk-link.png" alt="Trunk link between two switches in Packet Tracer">
+            <figcaption>Trunk link between switches carrying multiple VLANs using 802.1Q.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <!-- Summary / Reflection -->
+      <section class="card">
+        <h2>What I Learned</h2>
+        <p>
+          This lab showed me in a hands-on way that VLANs don’t just “label” ports—they actually
+          create separate broadcast domains. When PCs were on the same VLAN, pings worked. As soon
+          as I moved a PC into a different VLAN, pings failed unless routing or trunking was configured.
+          Extending VLANs across two switches with a trunk link made it clear how bigger networks keep
+          different departments separate but still organized on the same physical infrastructure.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <div>© <span id="year"></span> Jerry-Lab · VLAN Lab</div>
+      <div>Back to main site: <a href="index.html#projects">jerry-lab portfolio</a></div>
+    </footer>
+  </div>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
