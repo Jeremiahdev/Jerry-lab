@@ -4,92 +4,96 @@
   <meta charset="UTF-8" />
   <title>Jerry-Lab | Jeremiah Austin Hughes</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 
   <style>
     :root {
       --bg: #050510;
       --bg-soft: #09091a;
-      --bg-card: #0c1020;
-
-      --accent: #22c55e;       /* green */
-      --accent-soft: rgba(34, 197, 94, 0.18);
-      --accent-2: #38bdf8;     /* blue */
-      --accent-2-soft: rgba(56, 189, 248, 0.18);
-
+      --bg-card: rgba(10, 14, 28, 0.78);
+      --accent: #22c55e;      /* scope green */
+      --accent-2: #38bdf8;    /* cyan */
       --text-main: #f9fafb;
       --text-soft: #9ca3af;
-      --border-subtle: #1f2933;
-      --danger: #fb7185;
+      --border-subtle: rgba(34,197,94,0.18);
+      --border-2: rgba(56,189,248,0.18);
 
       font-family: "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
       color-scheme: dark;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       color: var(--text-main);
       min-height: 100vh;
       line-height: 1.6;
-      position: relative;
       overflow-x: hidden;
-
-      /* Oscilloscope-ish base glow */
-      background:
-        radial-gradient(circle at 12% -20%, rgba(56, 189, 248, 0.20) 0, transparent 55%),
-        radial-gradient(circle at 90% 120%, rgba(34, 197, 94, 0.18) 0, transparent 50%),
-        radial-gradient(circle at 50% 40%, rgba(2, 6, 23, 0.70) 0, rgba(5, 5, 16, 0.95) 55%, var(--bg) 100%),
-        var(--bg);
+      background: var(--bg);
+      position: relative;
     }
 
-    /* Oscilloscope grid */
-    body::after {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: -1;
-
-      /* Major + minor grid lines */
-      background-image:
-        linear-gradient(to right, rgba(34,197,94,0.10) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(34,197,94,0.10) 1px, transparent 1px),
-        linear-gradient(to right, rgba(34,197,94,0.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(34,197,94,0.05) 1px, transparent 1px);
-
-      background-size:
-        120px 120px,
-        120px 120px,
-        24px 24px,
-        24px 24px;
-
-      background-position: 0 0, 0 0, 0 0, 0 0;
-
-      opacity: 0.55;
-      mix-blend-mode: screen;
-      filter: blur(0.2px);
-    }
-
-    /* Scanlines + subtle noise */
+    /* Oscilloscope grid background */
     body::before {
       content: "";
       position: fixed;
       inset: 0;
       pointer-events: none;
-      opacity: 0.12;
+      z-index: -3;
+      background:
+        radial-gradient(circle at 30% 15%, rgba(56,189,248,0.10), transparent 55%),
+        radial-gradient(circle at 80% 80%, rgba(34,197,94,0.10), transparent 55%),
+        linear-gradient(var(--bg), var(--bg));
+    }
+
+    /* grid lines */
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -2;
+      opacity: 0.22;
       background-image:
-        repeating-linear-gradient(
-          to bottom,
-          rgba(255, 255, 255, 0.07) 0,
-          rgba(255, 255, 255, 0.07) 1px,
-          transparent 1px,
-          transparent 3px
-        );
-      mix-blend-mode: soft-light;
+        linear-gradient(to right, rgba(34,197,94,0.22) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(34,197,94,0.22) 1px, transparent 1px);
+      background-size: 64px 64px;
+      filter: drop-shadow(0 0 10px rgba(34,197,94,0.12));
+    }
+
+    /* animated sine wave overlay */
+    .wave-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
       z-index: -1;
+      opacity: 0.55;
+      mix-blend-mode: screen;
+    }
+    .wave-overlay svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .wave-path {
+      stroke: rgba(34,197,94,0.85);
+      stroke-width: 2.25;
+      fill: none;
+      filter: drop-shadow(0 0 10px rgba(34,197,94,0.35));
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 18 10;
+      animation: dash 2.4s linear infinite;
+    }
+    .wave-path-2 {
+      stroke: rgba(56,189,248,0.55);
+      stroke-width: 1.5;
+      fill: none;
+      filter: drop-shadow(0 0 10px rgba(56,189,248,0.25));
+      stroke-dasharray: 10 14;
+      animation: dash 3.1s linear infinite reverse;
+    }
+    @keyframes dash {
+      to { stroke-dashoffset: -200; }
     }
 
     a { color: var(--accent-2); text-decoration: none; }
@@ -115,22 +119,14 @@
       flex-direction: column;
       gap: 0.2rem;
     }
-
     .brand-main {
       font-family: "JetBrains Mono", monospace;
       font-size: 0.95rem;
       letter-spacing: 0.2em;
       text-transform: uppercase;
       color: var(--accent);
-      text-shadow:
-        0 0 10px rgba(34,197,94,0.25),
-        0 0 24px rgba(34,197,94,0.12);
     }
-
-    .brand-sub {
-      font-size: 0.8rem;
-      color: var(--text-soft);
-    }
+    .brand-sub { font-size: 0.8rem; color: var(--text-soft); }
 
     .nav-links {
       list-style: none;
@@ -139,44 +135,32 @@
       font-size: 0.85rem;
       text-transform: uppercase;
       letter-spacing: 0.12em;
+      flex-wrap: wrap;
     }
-
-    .nav-links a {
-      padding: 0.2rem 0;
-      position: relative;
-    }
-
+    .nav-links a { padding: 0.2rem 0; position: relative; }
     .nav-links a::after {
       content: "";
       position: absolute;
-      left: 0;
-      bottom: 0;
+      left: 0; bottom: 0;
       width: 0%;
       height: 2px;
       background: linear-gradient(90deg, var(--accent), var(--accent-2));
       transition: width 0.2s ease-out;
     }
-
     .nav-links a:hover::after { width: 100%; }
 
     @media (max-width: 720px) {
       nav { flex-direction: column; align-items: flex-start; }
-      .nav-links { flex-wrap: wrap; }
     }
 
-    /* HERO */
     .hero {
       margin-top: 2rem;
       display: grid;
       grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.2fr);
       gap: 2.5rem;
       align-items: center;
-      position: relative;
     }
-
-    @media (max-width: 880px) {
-      .hero { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 880px) { .hero { grid-template-columns: 1fr; } }
 
     .eyebrow {
       font-family: "JetBrains Mono", monospace;
@@ -187,139 +171,78 @@
       margin-bottom: 0.6rem;
       opacity: 0.95;
     }
-
     .hero-title {
-      font-size: clamp(2.4rem, 4vw, 3.2rem);
+      font-size: clamp(2.2rem, 4vw, 3.1rem);
       font-weight: 700;
       line-height: 1.1;
       margin-bottom: 0.6rem;
-      text-shadow: 0 18px 70px rgba(2,6,23,0.85);
+      text-shadow: 0 0 18px rgba(34,197,94,0.10);
     }
-
     .hero-title span {
       background: linear-gradient(120deg, var(--accent), var(--accent-2));
       -webkit-background-clip: text;
       color: transparent;
     }
-
-    .tagline {
-      font-size: 1rem;
-      color: var(--text-soft);
-      max-width: 35rem;
-      margin-bottom: 1.3rem;
-    }
-
+    .tagline { font-size: 1rem; color: var(--text-soft); max-width: 35rem; margin-bottom: 1.3rem; }
     .hero-meta {
       font-family: "JetBrains Mono", monospace;
       font-size: 0.8rem;
       color: var(--accent-2);
       margin-bottom: 1.5rem;
-      text-shadow: 0 0 18px rgba(56,189,248,0.18);
     }
 
-    .hero-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-    }
-
+    .hero-buttons { display: flex; flex-wrap: wrap; gap: 0.75rem; }
     .btn {
       border-radius: 999px;
       padding: 0.55rem 1.3rem;
       font-size: 0.9rem;
-      border: 1px solid rgba(56, 189, 248, 0.55);
-      background: rgba(15, 23, 42, 0.82);
+      border: 1px solid rgba(56,189,248,0.65);
+      background: rgba(3, 7, 18, 0.45);
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 0.35rem;
       backdrop-filter: blur(14px);
-      transition: transform 0.12s ease-out, box-shadow 0.12s ease-out, background 0.12s ease-out, border-color 0.12s ease-out;
-      box-shadow: 0 10px 30px rgba(3,7,18,0.55);
+      transition: transform 0.12s ease-out, box-shadow 0.12s ease-out, background 0.12s ease-out;
     }
-
     .btn.primary {
       border: none;
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      background: linear-gradient(135deg, rgba(34,197,94,0.95), rgba(56,189,248,0.95));
       color: #020617;
       font-weight: 700;
-      box-shadow: 0 14px 40px rgba(56,189,248,0.22);
+      box-shadow: 0 12px 35px rgba(34,197,94,0.22);
     }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 14px 40px rgba(3, 7, 18, 0.7); }
+    .btn.primary:hover { filter: brightness(1.04); }
 
-    .btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 16px 44px rgba(15, 23, 42, 0.65);
-      background: rgba(15, 23, 42, 0.92);
-      border-color: rgba(56, 189, 248, 0.85);
-    }
-
-    .btn.primary:hover { filter: brightness(1.05); }
-    .btn span.icon { font-size: 1rem; }
-
-    /* Hero “panel” */
     .hero-panel {
-      background:
-        radial-gradient(circle at top right, rgba(56, 189, 248, 0.14), transparent 55%),
-        radial-gradient(circle at bottom left, rgba(34, 197, 94, 0.10), transparent 60%),
-        rgba(12, 16, 32, 0.92);
+      background: var(--bg-card);
       border-radius: 1.25rem;
-      border: 1px solid rgba(31,41,55,0.85);
+      border: 1px solid var(--border-subtle);
       padding: 1.1rem 1.1rem 1rem;
-      box-shadow: 0 22px 55px rgba(3, 7, 18, 0.88);
+      box-shadow: 0 22px 55px rgba(3, 7, 18, 0.85);
       position: relative;
       overflow: hidden;
+      backdrop-filter: blur(14px);
     }
-
     .hero-panel::before {
-      content: "JERRY-LAB SCOPE";
+      content: "OSCILLOSCOPE MODE";
       position: absolute;
       top: 0.65rem;
       right: 1rem;
       font-family: "JetBrains Mono", monospace;
       font-size: 0.7rem;
       letter-spacing: 0.18em;
-      color: rgba(148, 163, 184, 0.88);
+      color: rgba(148, 163, 184, 0.85);
       text-transform: uppercase;
     }
 
-    /* faint moving glow wash (scope phosphor) */
-    .hero-panel::after {
-      content: "";
-      position: absolute;
-      inset: -40%;
-      background: radial-gradient(circle, rgba(34,197,94,0.10), transparent 60%);
-      animation: sweep 6.5s linear infinite;
-      opacity: 0.9;
-      pointer-events: none;
-      mix-blend-mode: screen;
-    }
-
-    @keyframes sweep {
-      0%   { transform: translateX(-18%) translateY(8%) rotate(8deg); }
-      50%  { transform: translateX(18%) translateY(-8%) rotate(-8deg); }
-      100% { transform: translateX(-18%) translateY(8%) rotate(8deg); }
-    }
-
-    .panel-header {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      margin-bottom: 0.8rem;
-      position: relative;
-      z-index: 2;
-    }
-
-    .panel-dots {
-      display: flex;
-      gap: 0.3rem;
-      font-size: 0.42rem;
-    }
-
+    .panel-header { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.8rem; }
+    .panel-dots { display: flex; gap: 0.3rem; }
     .dot { width: 9px; height: 9px; border-radius: 50%; background: #1f2937; }
     .dot.red { background: #f97373; }
     .dot.yellow { background: #facc15; }
     .dot.green { background: #4ade80; }
-
     .panel-tag {
       margin-left: auto;
       font-family: "JetBrains Mono", monospace;
@@ -328,98 +251,28 @@
       text-transform: uppercase;
       letter-spacing: 0.16em;
     }
-
     .panel-body {
       font-family: "JetBrains Mono", monospace;
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       color: #e5e7eb;
-      background:
-        /* scope grid inside panel */
-        linear-gradient(to right, rgba(34,197,94,0.12) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(34,197,94,0.12) 1px, transparent 1px),
-        linear-gradient(to right, rgba(34,197,94,0.06) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(34,197,94,0.06) 1px, transparent 1px),
-        rgba(2, 6, 23, 0.55);
-
-      background-size:
-        96px 96px, 96px 96px,
-        24px 24px, 24px 24px,
-        auto;
-
       border-radius: 0.8rem;
       padding: 0.9rem;
-      border: 1px solid rgba(148, 163, 184, 0.22);
-      min-height: 10.2rem;
-      position: relative;
-      overflow: hidden;
-      z-index: 2;
+      border: 1px solid rgba(34,197,94,0.22);
+      background: rgba(0,0,0,0.18);
+      min-height: 8.5rem;
     }
-
-    .prompt { color: var(--accent); text-shadow: 0 0 12px rgba(34,197,94,0.20); }
+    .prompt { color: var(--accent); }
     .panel-body .soft { color: var(--text-soft); }
-
-    .panel-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      margin-top: 0.8rem;
-    }
-
+    .panel-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.8rem; }
     .tiny-tag {
       border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.4);
+      border: 1px solid rgba(34,197,94,0.35);
       padding: 0.2rem 0.55rem;
       font-size: 0.7rem;
       color: #e5e7eb;
-      background: rgba(15, 23, 42, 0.75);
+      background: rgba(3, 7, 18, 0.55);
     }
 
-    /* Waveform line (SVG) inside panel */
-    .wave-wrap {
-      margin-top: 0.85rem;
-      border-radius: 0.7rem;
-      border: 1px solid rgba(56,189,248,0.25);
-      background: rgba(2,6,23,0.35);
-      padding: 0.6rem 0.55rem;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .wave-label {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.66rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: rgba(148,163,184,0.9);
-      margin-bottom: 0.35rem;
-      display: flex;
-      justify-content: space-between;
-      gap: 0.75rem;
-    }
-
-    .wave-svg {
-      width: 100%;
-      height: 56px;
-      display: block;
-    }
-
-    .wave-glow {
-      filter: drop-shadow(0 0 10px rgba(34,197,94,0.28))
-              drop-shadow(0 0 18px rgba(56,189,248,0.16));
-    }
-
-    /* Animated dash to feel “live” */
-    .wave-path {
-      stroke-dasharray: 6 10;
-      animation: dash 2.2s linear infinite;
-    }
-
-    @keyframes dash {
-      from { stroke-dashoffset: 0; }
-      to   { stroke-dashoffset: -80; }
-    }
-
-    /* SECTIONS */
     main { margin-top: 2.5rem; }
     section { margin-top: 3rem; }
 
@@ -431,40 +284,35 @@
       color: var(--text-soft);
       margin-bottom: 0.4rem;
     }
-
     h2 { font-size: 1.6rem; margin-bottom: 0.75rem; }
-
     .section-sub {
       font-size: 0.95rem;
       color: var(--text-soft);
-      max-width: 42rem;
+      max-width: 46rem;
       margin-bottom: 1.5rem;
     }
 
     .grid { display: grid; gap: 1.4rem; }
-
     @media (min-width: 880px) {
       .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     }
 
+    .card-link { text-decoration: none; color: inherit; display: block; }
     .card {
-      background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.98));
+      background: var(--bg-card);
       border-radius: 1.1rem;
       padding: 1.15rem 1.1rem 1.1rem;
-      border: 1px solid rgba(31, 41, 55, 0.95);
-      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(34,197,94,0.18);
+      box-shadow: 0 18px 45px rgba(3, 7, 18, 0.78);
       position: relative;
       overflow: hidden;
+      backdrop-filter: blur(14px);
+      transition: transform 0.12s ease-out, border-color 0.12s ease-out;
     }
-
-    .card::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent 55%);
-      opacity: 0.75;
-      pointer-events: none;
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(56,189,248,0.35);
     }
 
     .card-inner { position: relative; z-index: 1; }
@@ -476,9 +324,7 @@
       gap: 0.6rem;
       margin-bottom: 0.35rem;
     }
-
-    .card-title { font-weight: 600; font-size: 1rem; }
-
+    .card-title { font-weight: 700; font-size: 1rem; }
     .card-meta {
       font-family: "JetBrains Mono", monospace;
       font-size: 0.7rem;
@@ -486,62 +332,32 @@
       text-transform: uppercase;
       letter-spacing: 0.16em;
     }
-
     .card p { font-size: 0.9rem; color: #e5e7eb; margin-top: 0.35rem; }
 
-    .card-tags {
-      margin-top: 0.6rem;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-    }
-
+    .card-tags { margin-top: 0.6rem; display: flex; flex-wrap: wrap; gap: 0.4rem; }
     .tag {
       border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.4);
+      border: 1px solid rgba(148, 163, 184, 0.28);
       padding: 0.15rem 0.6rem;
       font-size: 0.78rem;
       color: #e5e7eb;
-      background: rgba(15, 23, 42, 0.70);
+      background: rgba(3, 7, 18, 0.55);
     }
-
     .tag.chip-light {
-      background: var(--accent-soft);
-      border-color: rgba(34, 197, 94, 0.75);
+      background: rgba(34,197,94,0.16);
+      border-color: rgba(34,197,94,0.45);
       color: #bbf7d0;
     }
 
-    .skills-groups { display: grid; gap: 1rem; }
-
-    .skills-group h3 { font-size: 0.95rem; margin-bottom: 0.35rem; }
-
-    .pill-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-    .pill-row .tag { font-size: 0.77rem; }
-
-    /* CONTACT & FOOTER */
-    .contact-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      font-size: 0.9rem;
-    }
-
-    .contact-links span {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-    }
-
     footer {
-      border-top: 1px solid var(--border-subtle);
+      border-top: 1px solid rgba(34,197,94,0.18);
       padding: 1.6rem clamp(1.2rem, 4vw, 2.25rem) 1.8rem;
       font-size: 0.78rem;
       color: var(--text-soft);
-      background: rgba(2, 6, 23, 0.92);
+      background: rgba(3, 7, 18, 0.55);
       backdrop-filter: blur(16px);
       margin-top: 3rem;
     }
-
     footer .footer-row {
       max-width: 1120px;
       margin: 0 auto;
@@ -551,25 +367,34 @@
       align-items: center;
       justify-content: space-between;
     }
-
-    .card-link { text-decoration: none; color: inherit; display: block; }
-
-    /* Accessibility: focus ring for clickable cards */
-    .card-link:focus-visible {
-      outline: 2px solid rgba(56,189,248,0.9);
-      outline-offset: 6px;
-      border-radius: 1.2rem;
-    }
   </style>
 </head>
 
 <body>
+  <!-- sine wave overlay -->
+  <div class="wave-overlay" aria-hidden="true">
+    <svg viewBox="0 0 1200 700" preserveAspectRatio="none">
+      <!-- main wave -->
+      <path class="wave-path" d="M0,360
+        C 120,280 240,440 360,360
+        C 480,280 600,440 720,360
+        C 840,280 960,440 1080,360
+        C 1140,320 1170,300 1200,320" />
+      <!-- secondary wave -->
+      <path class="wave-path-2" d="M0,420
+        C 140,380 220,460 360,420
+        C 500,380 580,460 720,420
+        C 860,380 940,460 1080,420
+        C 1140,410 1170,400 1200,410" />
+    </svg>
+  </div>
+
   <div class="shell">
     <header>
       <nav>
         <div class="brand">
           <div class="brand-main">JERRY-LAB</div>
-          <div class="brand-sub">Embedded · IoT · Networking · Hardware</div>
+          <div class="brand-sub">Embedded · IoT · Web</div>
         </div>
         <ul class="nav-links">
           <li><a href="#projects">Projects</a></li>
@@ -583,33 +408,22 @@
         <div>
           <div class="eyebrow">// NYC · Computer Engineering</div>
           <h1 class="hero-title">
-            I build <span>systems</span> you can touch and measure.
+            I build <span>systems</span> you can touch and test.
           </h1>
           <p class="tagline">
-            I’m <strong>Jeremiah Austin Hughes</strong> — a computer engineering student focused on
-            embedded systems, IoT, networking labs, and hardware design. I like building things that
-            sense the world, talk over networks, and show clean data.
+            I’m <strong>Jeremiah Austin Hughes</strong> — I like building low-level firmware, wiring real hardware,
+            and then making dashboards that show what’s happening. If it can be measured, I want it on a screen.
           </p>
           <p class="hero-meta">
-            current stack: esp32 · mqtt · packet tracer · next.js dashboards · pcb design
+            current focus: esp32 · mqtt · raspberry pi · network labs · hardware trainers
           </p>
           <div class="hero-buttons">
-            <a href="#projects" class="btn primary">
-              <span class="icon">⚡</span>
-              <span>View Projects</span>
-            </a>
-            <a href="#skills" class="btn">
-              <span class="icon">🧩</span>
-              <span>Skills</span>
-            </a>
-            <a href="#contact" class="btn">
-              <span class="icon">📡</span>
-              <span>Contact</span>
-            </a>
+            <a href="#projects" class="btn primary"><span>⚡</span><span>View Projects</span></a>
+            <a href="#contact" class="btn"><span>📡</span><span>Contact</span></a>
           </div>
         </div>
 
-        <aside class="hero-panel" aria-label="Jerry-Lab oscilloscope console">
+        <aside class="hero-panel" aria-label="Jerry-Lab status console">
           <div class="panel-header">
             <div class="panel-dots">
               <div class="dot red"></div>
@@ -618,68 +432,22 @@
             </div>
             <div class="panel-tag">STATUS · ONLINE</div>
           </div>
-
           <div class="panel-body">
             <div><span class="prompt">jerry@lab</span>:~$ whoami</div>
-            <div>embedded / networking / hardware</div>
+            <div>embedded / networking / web dashboards</div>
             <br/>
-            <div><span class="prompt">jerry@lab</span>:~$ scope --channel=1</div>
+            <div><span class="prompt">jerry@lab</span>:~$ signal</div>
             <div class="soft">
-              → signal: systems-in-motion<br/>
-              → mode: debug / measure / iterate
-            </div>
-
-            <div class="wave-wrap" aria-label="Live waveform display">
-              <div class="wave-label">
-                <span>CH1 · WAVEFORM</span>
-                <span>1ms/div · 1V/div</span>
-              </div>
-
-              <!-- Waveform SVG -->
-              <svg class="wave-svg" viewBox="0 0 600 80" role="img" aria-label="Oscilloscope waveform">
-                <!-- faint baseline -->
-                <path d="M 0 40 L 600 40" stroke="rgba(148,163,184,0.25)" stroke-width="1" fill="none"></path>
-
-                <!-- glow underlay -->
-                <path class="wave-glow"
-                      d="M 0 40
-                         C 30 15, 60 15, 90 40
-                         S 150 65, 180 40
-                         S 240 15, 270 40
-                         S 330 65, 360 40
-                         S 420 15, 450 40
-                         S 510 65, 540 40
-                         S 585 20, 600 40"
-                      stroke="rgba(34,197,94,0.55)"
-                      stroke-width="4"
-                      fill="none"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      opacity="0.30"></path>
-
-                <!-- main trace -->
-                <path class="wave-path"
-                      d="M 0 40
-                         C 30 15, 60 15, 90 40
-                         S 150 65, 180 40
-                         S 240 15, 270 40
-                         S 330 65, 360 40
-                         S 420 15, 450 40
-                         S 510 65, 540 40
-                         S 585 20, 600 40"
-                      stroke="rgba(56,189,248,0.95)"
-                      stroke-width="2.2"
-                      fill="none"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"></path>
-              </svg>
+              → firmware that talks to sensors<br/>
+              → hardware you can test in the real world<br/>
+              → visuals that make data feel alive
             </div>
 
             <div class="panel-tags">
-              <span class="tiny-tag">ESP32 · FreeRTOS</span>
-              <span class="tiny-tag">Raspberry Pi · MQTT</span>
+              <span class="tiny-tag">ESP32</span>
+              <span class="tiny-tag">MQTT</span>
+              <span class="tiny-tag">Raspberry Pi</span>
               <span class="tiny-tag">Packet Tracer</span>
-              <span class="tiny-tag">KiCad</span>
             </div>
           </div>
         </aside>
@@ -692,10 +460,8 @@
         <div class="section-label">about</div>
         <h2>Who I am</h2>
         <p class="section-sub">
-          I’m a Computer Engineering Technology student at City Tech in NYC with a background in
-          electromechanical technology. I like building things that move, sense, or react — from
-          ESP32-based sensors to dashboards that visualize real-time data, plus networking labs that
-          mirror real-world setups.
+          Computer Engineering Technology student in NYC. I build embedded + networking projects that
+          turn into demos I can explain end-to-end.
         </p>
       </section>
 
@@ -704,169 +470,163 @@
         <div class="section-label">projects</div>
         <h2>Selected engineering projects</h2>
         <p class="section-sub">
-          A mix of embedded, IoT, networking labs, and hardware design. Most of these started as
-          class or self-study experiments and evolved into systems I can demo.
+          Embedded, IoT, networking labs, and hardware builds. Click a project to see screenshots, diagrams, and results.
         </p>
 
         <!-- EMBEDDED & IOT -->
         <div class="section-label" style="margin-top:1.5rem;">embedded & iot</div>
         <div class="grid grid-3">
-          <!-- ESP32 Smart Terrarium -->
-          <article class="card">
-            <div class="card-inner">
-              <div class="card-title-row">
-                <div class="card-title">Smart Terrarium (ESP32 + MQTT)</div>
-                <div class="card-meta">iot · env sensing</div>
-              </div>
-              <p>
-                ESP32-based terrarium that monitors soil moisture and humidity, then publishes readings
-                to a Raspberry Pi MQTT broker. Built to feed into a live web dashboard.
-              </p>
-              <div class="card-tags">
-                <span class="tag chip-light">ESP32</span>
-                <span class="tag">C / ESP-IDF</span>
-                <span class="tag">MQTT</span>
-                <span class="tag">Raspberry Pi</span>
-              </div>
-            </div>
-          </article>
-
-          <!-- Beach Quality / Weather Node (clickable) -->
-          <a href="beach-node.html" class="card-link">
+          <!-- MQTT Broker -->
+          <a href="mqtt-broker.html" class="card-link">
             <article class="card">
               <div class="card-inner">
                 <div class="card-title-row">
-                  <div class="card-title">Beach Quality / Weather Node</div>
-                  <div class="card-meta">research · sensors</div>
+                  <div class="card-title">MQTT Broker (Raspberry Pi)</div>
+                  <div class="card-meta">iot · messaging</div>
                 </div>
                 <p>
-                  Low-cost node using Arduino / ESP32 and environmental sensors to capture air, water, and
-                  soil conditions for Caribbean beach research. Focus on affordability and clear data.
+                  Mosquitto broker on a Raspberry Pi to collect ESP32 sensor data.
+                  Built to support dashboards, remote monitoring, and lab-style testing.
                 </p>
                 <div class="card-tags">
-                  <span class="tag chip-light">Arduino / ESP32</span>
-                  <span class="tag">Env Sensors</span>
-                  <span class="tag">Data Logging</span>
+                  <span class="tag chip-light">Raspberry Pi</span>
+                  <span class="tag">Mosquitto</span>
+                  <span class="tag">MQTT</span>
+                  <span class="tag">Linux</span>
                 </div>
               </div>
             </article>
           </a>
 
-          <!-- ESP32 Security / Smart Home -->
-          <article class="card">
-            <div class="card-inner">
-              <div class="card-title-row">
-                <div class="card-title">ESP32 Smart Home / Security Experiments</div>
-                <div class="card-meta">prototype</div>
+          <!-- Full-Stack MTA -->
+          <a href="mta-nearby-transit.html" class="card-link">
+            <article class="card">
+              <div class="card-inner">
+                <div class="card-title-row">
+                  <div class="card-title">Nearby Transit (Full-Stack MTA)</div>
+                  <div class="card-meta">web · realtime</div>
+                </div>
+                <p>
+                  Full-stack app that shows nearby train arrivals. Built toward a clean UI + reliable API caching.
+                </p>
+                <div class="card-tags">
+                  <span class="tag chip-light">Next.js</span>
+                  <span class="tag">API</span>
+                  <span class="tag">Realtime Feeds</span>
+                  <span class="tag">Caching</span>
+                </div>
               </div>
-              <p>
-                Prototyping door sensors, motion detection, and camera integration using ESP32 and
-                Raspberry Pi. Long-term goal: a home security dashboard with multiple sensor nodes.
-              </p>
-              <div class="card-tags">
-                <span class="tag chip-light">ESP32</span>
-                <span class="tag">PIR / Door Sensors</span>
-                <span class="tag">Python</span>
-                <span class="tag">Raspberry Pi</span>
+            </article>
+          </a>
+
+          <!-- TMP102 firmware -->
+          <a href="tmp102-firmware.html" class="card-link">
+            <article class="card">
+              <div class="card-inner">
+                <div class="card-title-row">
+                  <div class="card-title">TMP102 Sensor Firmware</div>
+                  <div class="card-meta">firmware · i2c</div>
+                </div>
+                <p>
+                  Firmware to read the TMP102 temperature sensor over I2C and publish/print stable readings.
+                </p>
+                <div class="card-tags">
+                  <span class="tag chip-light">C</span>
+                  <span class="tag">I2C</span>
+                  <span class="tag">ESP32</span>
+                  <span class="tag">Debug</span>
+                </div>
               </div>
-            </div>
-          </article>
+            </article>
+          </a>
         </div>
 
-        <!-- NETWORKING / PACKET TRACER LABS -->
+        <!-- NETWORKING -->
         <div class="section-label" style="margin-top:2.2rem;">networking · packet tracer</div>
         <p class="section-sub">
-          Labs built in Cisco Packet Tracer to practice real-world network engineer tasks like VLAN design,
-          NAT, and infrastructure segmentation.
+          Labs built in Cisco Packet Tracer: VLANs, trunking, routing, NAT, and segmentation patterns.
         </p>
 
         <div class="grid grid-2">
-          <!-- VLAN Lab -->
           <a href="vlan-lab.html" class="card-link">
             <article class="card">
               <div class="card-inner">
                 <div class="card-title-row">
-                  <div class="card-title">Creating VLANs on Single & Multiple Switches</div>
-                  <div class="card-meta">packet tracer lab</div>
+                  <div class="card-title">VLANs on Single & Multiple Switches</div>
+                  <div class="card-meta">packet tracer</div>
                 </div>
                 <p>
-                  Configured VLANs on one and then two switches in Cisco Packet Tracer. Assigned IP
-                  addresses to hosts, moved switch ports into different VLANs, and used 802.1Q trunking
-                  between switches. Verified separation using ping tests.
+                  VLAN creation, port assignment, and 802.1Q trunking between switches. Verified isolation with pings.
                 </p>
                 <div class="card-tags">
-                  <span class="tag chip-light">Cisco Packet Tracer</span>
-                  <span class="tag">VLANs</span>
-                  <span class="tag">802.1Q Trunking</span>
-                  <span class="tag">Broadcast Domains</span>
+                  <span class="tag chip-light">VLANs</span>
+                  <span class="tag">802.1Q</span>
+                  <span class="tag">Switching</span>
                 </div>
               </div>
             </article>
           </a>
 
-          <!-- NAT Lab -->
           <article class="card">
             <div class="card-inner">
               <div class="card-title-row">
-                <div class="card-title">NAT & Screened Subnet for Internet Access</div>
-                <div class="card-meta">packet tracer lab</div>
+                <div class="card-title">NAT & Screened Subnet</div>
+                <div class="card-meta">packet tracer</div>
               </div>
               <p>
-                Configured a router with a screened subnet and NAT so internal hosts could safely
-                access the internet. Documented how private IPs translate to a public IP and why this
-                helps protect internal devices.
+                Router NAT + screened subnet design so internal hosts can access the internet with safer boundaries.
               </p>
               <div class="card-tags">
                 <span class="tag chip-light">NAT</span>
-                <span class="tag">Screened Subnet</span>
                 <span class="tag">Routing</span>
+                <span class="tag">Security</span>
               </div>
             </div>
           </article>
         </div>
 
-        <!-- HARDWARE DESIGN / PCB -->
-        <div class="section-label" style="margin-top:2.2rem;">hardware design · pcb</div>
+        <!-- HARDWARE BUILDS -->
+        <div class="section-label" style="margin-top:2.2rem;">hardware builds</div>
         <p class="section-sub">
-          Moving from breadboards to boards — capturing schematics, footprints, and layouts so projects
-          can live on custom PCBs instead of jumper wires.
+          Physical builds that make learning easier: trainers, test rigs, and boards you can interact with.
         </p>
 
         <div class="grid grid-2">
-          <!-- PCB -->
-          <article class="card">
-            <div class="card-inner">
-              <div class="card-title-row">
-                <div class="card-title">ESP32 Sensor PCB (in progress)</div>
-                <div class="card-meta">kicad</div>
+          <!-- NEW: Digital Logic Trainer -->
+          <a href="digital-trainer.html" class="card-link">
+            <article class="card">
+              <div class="card-inner">
+                <div class="card-title-row">
+                  <div class="card-title">Digital Logic Trainer (IC Gate Trainer)</div>
+                  <div class="card-meta">hardware · lab tool</div>
+                </div>
+                <p>
+                  A hands-on trainer to test digital logic gate ICs with switches, LEDs, and clean wiring—built like a
+                  mini lab instrument for learning and demos.
+                </p>
+                <div class="card-tags">
+                  <span class="tag chip-light">Digital Logic</span>
+                  <span class="tag">TTL/CMOS ICs</span>
+                  <span class="tag">LED Indicators</span>
+                  <span class="tag">Switch Inputs</span>
+                </div>
               </div>
-              <p>
-                Designing a custom PCB for an ESP32-based sensor node, including power regulation,
-                headers for I2C / UART sensors, and correct footprints for SMD parts.
-              </p>
-              <div class="card-tags">
-                <span class="tag chip-light">KiCad</span>
-                <span class="tag">ESP32 Module</span>
-                <span class="tag">SMD Footprints</span>
-              </div>
-            </div>
-          </article>
+            </article>
+          </a>
 
-          <!-- Prototyping -->
           <article class="card">
             <div class="card-inner">
               <div class="card-title-row">
-                <div class="card-title">Hardware Prototyping & Testing</div>
-                <div class="card-meta">lab work</div>
+                <div class="card-title">PCB / Circuit Lab Builds</div>
+                <div class="card-meta">hands-on</div>
               </div>
               <p>
-                Breadboarding and testing circuits for sensor nodes and control systems — verifying
-                voltage levels, signal integrity, and pin mappings before PCB layout.
+                Breadboards → schematics → boards. Focus on wiring discipline, test points, and repeatable results.
               </p>
               <div class="card-tags">
-                <span class="tag chip-light">Breadboarding</span>
-                <span class="tag">Multimeter / Debug</span>
-                <span class="tag">Circuit Analysis</span>
+                <span class="tag chip-light">Debug</span>
+                <span class="tag">Multimeter</span>
+                <span class="tag">Soldering</span>
               </div>
             </div>
           </article>
@@ -878,44 +638,56 @@
         <div class="section-label">skills</div>
         <h2>What I work with</h2>
         <p class="section-sub">
-          From low-level code that talks to sensors, to networking labs that mirror real environments.
+          From low-level firmware to networks to dashboards.
         </p>
 
-        <div class="skills-groups grid grid-3">
-          <div class="skills-group">
-            <h3>Languages</h3>
-            <div class="pill-row">
-              <span class="tag">C</span>
-              <span class="tag">C++</span>
-              <span class="tag">Python</span>
-              <span class="tag">Java</span>
-              <span class="tag">JavaScript</span>
-              <span class="tag">HTML / CSS</span>
+        <div class="grid grid-3">
+          <article class="card">
+            <div class="card-inner">
+              <div class="card-title-row">
+                <div class="card-title">Languages</div>
+                <div class="card-meta">code</div>
+              </div>
+              <div class="card-tags">
+                <span class="tag chip-light">C</span>
+                <span class="tag">C++</span>
+                <span class="tag">Python</span>
+                <span class="tag">JavaScript</span>
+                <span class="tag">HTML/CSS</span>
+              </div>
             </div>
-          </div>
+          </article>
 
-          <div class="skills-group">
-            <h3>Embedded & Hardware</h3>
-            <div class="pill-row">
-              <span class="tag">ESP32</span>
-              <span class="tag">Arduino</span>
-              <span class="tag">FreeRTOS</span>
-              <span class="tag">Digital & Analog Circuits</span>
-              <span class="tag">Sensors (temp, motion, env)</span>
+          <article class="card">
+            <div class="card-inner">
+              <div class="card-title-row">
+                <div class="card-title">Embedded</div>
+                <div class="card-meta">hardware</div>
+              </div>
+              <div class="card-tags">
+                <span class="tag chip-light">ESP32</span>
+                <span class="tag">I2C</span>
+                <span class="tag">UART</span>
+                <span class="tag">Sensors</span>
+              </div>
             </div>
-          </div>
+          </article>
 
-          <div class="skills-group">
-            <h3>Networking & Tools</h3>
-            <div class="pill-row">
-              <span class="tag">Cisco Packet Tracer</span>
-              <span class="tag">VLANs</span>
-              <span class="tag">NAT</span>
-              <span class="tag">Linux</span>
-              <span class="tag">Git & GitHub</span>
-              <span class="tag">MATLAB</span>
+          <article class="card">
+            <div class="card-inner">
+              <div class="card-title-row">
+                <div class="card-title">Networking / Tools</div>
+                <div class="card-meta">infra</div>
+              </div>
+              <div class="card-tags">
+                <span class="tag chip-light">Linux</span>
+                <span class="tag">MQTT</span>
+                <span class="tag">Wireshark</span>
+                <span class="tag">Packet Tracer</span>
+                <span class="tag">Git/GitHub</span>
+              </div>
             </div>
-          </div>
+          </article>
         </div>
       </section>
 
@@ -932,9 +704,7 @@
                 <div class="card-meta">student</div>
               </div>
               <p>
-                Courses in embedded systems, digital logic, control systems, networking, and math.
-                Previously completed an AAS in Electromechanical Technology, building strong hands-on
-                experience with circuits and hardware.
+                Embedded systems, digital logic, networking, and hands-on labs. Building projects that feel like real tools.
               </p>
             </div>
           </article>
@@ -942,12 +712,11 @@
           <article class="card">
             <div class="card-inner">
               <div class="card-title-row">
-                <div class="card-title">Internships & Research Projects</div>
+                <div class="card-title">Research / Internship Work</div>
                 <div class="card-meta">ongoing</div>
               </div>
               <p>
-                Projects around low-cost sensors, environmental monitoring, and systems that connect
-                hardware to usable data.
+                Projects around low-cost sensors, environmental monitoring, and turning data into something usable.
               </p>
             </div>
           </article>
@@ -959,19 +728,18 @@
         <div class="section-label">contact</div>
         <h2>Let’s build</h2>
         <p class="section-sub">
-          I’m open to embedded / IoT roles, networking-focused roles, and projects that mix hardware + software.
+          Open to embedded / IoT roles, networking roles, and projects where hardware + software connect.
         </p>
 
         <article class="card">
           <div class="card-inner">
             <p style="font-size:0.95rem; margin-bottom:0.9rem;">
-              Best way to reach me is email. You can also find my code here:
+              Best way to reach me is email:
             </p>
-            <div class="contact-links">
-              <!-- Replace placeholders with your real info -->
-              <span>📨 <a href="Jeremiah.Hughes@mail.citytech.cuny.edu">Jeremiah.Hughes@mail.citytech.cuny.edu</a></span>
-              <span>💻 <a href="https://github.com/Jeremiahdev" target="_blank" rel="noreferrer">GitHub</a></span>
-              <span>🔗 <a href="https://www.linkedin.com/in/jeremiah-hughes-78ba55213/" target="_blank" rel="noreferrer">LinkedIn</a></span>
+            <div style="display:flex; flex-wrap:wrap; gap:0.9rem; font-size:0.9rem;">
+              <span>📨 <a href="mailto:youremail@example.com">youremail@example.com</a></span>
+              <span>💻 <a href="https://github.com/" target="_blank" rel="noreferrer">GitHub</a></span>
+              <span>🔗 <a href="#" target="_blank" rel="noreferrer">LinkedIn</a></span>
             </div>
           </div>
         </article>
@@ -982,7 +750,7 @@
   <footer>
     <div class="footer-row">
       <div>© <span id="year"></span> Jerry-Lab · Jeremiah Austin Hughes</div>
-      <div></div>
+      <div>Oscilloscope mode: ON</div>
     </div>
   </footer>
 
@@ -991,6 +759,7 @@
   </script>
 </body>
 </html>
+
 
 
 
