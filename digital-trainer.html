@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Jerry-Lab | Digital Logic Trainer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#050510;
+      --panel: rgba(3,7,18,0.62);
+      --panel2: rgba(10,14,28,0.72);
+      --green:#22c55e;
+      --cyan:#38bdf8;
+      --text:#f9fafb;
+      --muted:#9ca3af;
+      --border: rgba(34,197,94,0.22);
+      --border2: rgba(56,189,248,0.22);
+      --shadow: 0 18px 45px rgba(3,7,18,0.78);
+      color-scheme: dark;
+    }
+
+    *{ box-sizing:border-box; margin:0; padding:0; }
+
+    body{
+      font-family:"Space Grotesk", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height:100vh;
+      overflow-x:hidden;
+      line-height:1.6;
+      position:relative;
+    }
+
+    /* oscilloscope-ish glow + soft gradients */
+    body::before{
+      content:"";
+      position:fixed; inset:0; z-index:-3; pointer-events:none;
+      background:
+        radial-gradient(circle at 25% 15%, rgba(56,189,248,0.10), transparent 55%),
+        radial-gradient(circle at 80% 85%, rgba(34,197,94,0.10), transparent 55%),
+        linear-gradient(var(--bg), var(--bg));
+    }
+
+    /* faint grid */
+    body::after{
+      content:"";
+      position:fixed; inset:0; z-index:-2; pointer-events:none;
+      opacity:0.22;
+      background-image:
+        linear-gradient(to right, rgba(34,197,94,0.22) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(34,197,94,0.22) 1px, transparent 1px);
+      background-size: 64px 64px;
+      filter: drop-shadow(0 0 12px rgba(34,197,94,0.12));
+    }
+
+    /* moving waveform overlay */
+    .wave-overlay{ position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:0.55; mix-blend-mode:screen; }
+    .wave-overlay svg{ width:100%; height:100%; display:block; }
+    .wave-path{
+      stroke: rgba(34,197,94,0.88); stroke-width:2.3; fill:none;
+      filter: drop-shadow(0 0 10px rgba(34,197,94,0.35));
+      stroke-dasharray: 18 10; animation: dash 2.4s linear infinite;
+      stroke-linecap:round; stroke-linejoin:round;
+    }
+    .wave-path-2{
+      stroke: rgba(56,189,248,0.55); stroke-width:1.5; fill:none;
+      filter: drop-shadow(0 0 10px rgba(56,189,248,0.25));
+      stroke-dasharray: 10 14; animation: dash 3.1s linear infinite reverse;
+      stroke-linecap:round; stroke-linejoin:round;
+    }
+    @keyframes dash{ to{ stroke-dashoffset:-220; } }
+
+    a{ color:var(--cyan); text-decoration:none; }
+    a:hover{ text-decoration:underline; }
+
+    /* TOP BAR */
+    .topbar{
+      position:sticky; top:0; z-index:10;
+      backdrop-filter: blur(14px);
+      background: rgba(3,7,18,0.65);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 10px 28px rgba(3,7,18,0.6);
+    }
+    .topbar-inner{
+      max-width: 1100px; margin: 0 auto; padding: 0.8rem 1.2rem;
+      display:flex; align-items:center; justify-content:space-between; gap:1rem;
+    }
+    .logo{
+      font-family:"JetBrains Mono", monospace;
+      letter-spacing:0.18em; text-transform:uppercase;
+      font-size:0.85rem; color:var(--green);
+      display:flex; gap:0.7rem; align-items:baseline;
+      white-space:nowrap;
+    }
+    .logo span.badge{
+      font-size:0.7rem; color: rgba(249,250,251,0.75);
+      border: 1px solid rgba(56,189,248,0.25);
+      padding: 0.12rem 0.5rem; border-radius:999px;
+      background: rgba(10,14,28,0.55);
+    }
+    .topnav{
+      display:flex; flex-wrap:wrap; gap:0.8rem;
+      font-family:"JetBrains Mono", monospace;
+      font-size:0.72rem; text-transform:uppercase;
+      letter-spacing:0.14em;
+      color: rgba(249,250,251,0.78);
+      justify-content:flex-end;
+    }
+    .topnav a{
+      color: rgba(249,250,251,0.78);
+      padding: 0.2rem 0.35rem; border-radius: 6px;
+      border: 1px solid transparent;
+    }
+    .topnav a:hover{
+      border-color: rgba(56,189,248,0.25);
+      background: rgba(10,14,28,0.55);
+      text-decoration:none;
+    }
+
+    /* LAYOUT */
+    .wrap{ max-width:1100px; margin: 1.3rem auto 3rem; padding: 0 1.2rem; }
+
+    .header{
+      background: var(--panel);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      border-radius: 14px;
+      overflow:hidden;
+    }
+
+    .banner{
+      padding: 1.1rem 1.1rem 1rem;
+      background:
+        linear-gradient(90deg, rgba(34,197,94,0.12), rgba(56,189,248,0.10)),
+        rgba(3,7,18,0.40);
+      border-bottom: 1px solid rgba(34,197,94,0.18);
+    }
+
+    .title-row{
+      display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:0.8rem;
+    }
+
+    h1{ font-size:1.45rem; line-height:1.1; text-shadow: 0 0 16px rgba(34,197,94,0.10); }
+
+    .status{
+      font-family:"JetBrains Mono", monospace;
+      font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase;
+      color: rgba(249,250,251,0.78);
+      display:flex; gap:0.5rem; align-items:center;
+      white-space:nowrap;
+    }
+    .dot{ width:9px; height:9px; border-radius:50%; background: var(--green); box-shadow:0 0 12px rgba(34,197,94,0.55); }
+
+    .subtitle{ margin-top:0.6rem; color: rgba(249,250,251,0.80); max-width: 62rem; }
+    .subtitle b{ color: var(--cyan); }
+
+    .body{
+      padding: 1.1rem;
+      display:grid; gap: 1rem;
+      grid-template-columns: 330px 1fr;
+    }
+    @media (max-width: 900px){ .body{ grid-template-columns:1fr; } }
+
+    .box{
+      background: var(--panel2);
+      border: 1px solid rgba(56,189,248,0.18);
+      border-radius: 12px;
+      box-shadow: 0 16px 36px rgba(3,7,18,0.65);
+      overflow:hidden;
+    }
+    .box-title{
+      font-family:"JetBrains Mono", monospace;
+      font-size:0.8rem; letter-spacing:0.14em; text-transform:uppercase;
+      padding: 0.65rem 0.8rem;
+      border-bottom: 1px dashed rgba(56,189,248,0.25);
+      background: rgba(3,7,18,0.35);
+      display:flex; align-items:center; justify-content:space-between; gap:0.8rem;
+    }
+    .box-title .glow{ color: var(--green); text-shadow:0 0 12px rgba(34,197,94,0.35); }
+    .box-content{ padding: 0.85rem 0.9rem 1rem; }
+
+    .pillrow{ display:flex; flex-wrap:wrap; gap:0.45rem; }
+    .pill{
+      display:inline-flex; align-items:center; gap:0.4rem;
+      font-family:"JetBrains Mono", monospace;
+      font-size:0.72rem;
+      color: rgba(249,250,251,0.85);
+      border: 1px solid rgba(34,197,94,0.20);
+      background: rgba(3,7,18,0.50);
+      padding: 0.22rem 0.55rem;
+      border-radius:999px;
+    }
+    .pill strong{ color: var(--cyan); font-weight:600; }
+
+    .section{ margin-top:0.9rem; }
+    .section h2{ font-size:1.05rem; margin-bottom:0.45rem; }
+    .section p{ color: rgba(249,250,251,0.82); }
+
+    .list{ margin-top:0.5rem; padding-left: 1.1rem; color: rgba(249,250,251,0.85); }
+    .list li{ margin: 0.25rem 0; }
+
+    .btn{
+      display:inline-flex; align-items:center; gap:0.5rem;
+      font-family:"JetBrains Mono", monospace;
+      font-size:0.78rem;
+      letter-spacing:0.12em;
+      text-transform:uppercase;
+      border: 1px solid rgba(56,189,248,0.22);
+      background: rgba(3,7,18,0.55);
+      padding: 0.35rem 0.65rem;
+      border-radius:999px;
+      white-space:nowrap;
+    }
+    .btn:hover{ text-decoration:none; border-color: rgba(56,189,248,0.38); }
+
+    /* gallery */
+    .gallery{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+    @media (max-width: 980px){ .gallery{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (max-width: 680px){ .gallery{ grid-template-columns:1fr; } }
+
+    figure{
+      border-radius: 12px;
+      overflow:hidden;
+      border: 1px solid rgba(34,197,94,0.18);
+      background: rgba(0,0,0,0.18);
+    }
+    figure img{
+      width:100%;
+      height: 220px;
+      object-fit: cover;
+      display:block;
+      filter: contrast(1.05) saturate(1.05);
+    }
+    figcaption{
+      padding: 0.6rem 0.75rem;
+      font-size:0.88rem;
+      color: rgba(249,250,251,0.80);
+      border-top: 1px solid rgba(56,189,248,0.14);
+      background: rgba(3,7,18,0.25);
+    }
+    figcaption b{ color: var(--cyan); }
+
+    .codebox{
+      margin-top:0.75rem;
+      font-family:"JetBrains Mono", monospace;
+      font-size:0.82rem;
+      background: rgba(0,0,0,0.22);
+      border: 1px solid rgba(34,197,94,0.22);
+      border-radius: 12px;
+      padding: 0.8rem;
+      color: rgba(249,250,251,0.90);
+      overflow:auto;
+    }
+    .prompt{ color: var(--green); }
+
+    .footer{
+      margin-top: 1.25rem;
+      color: rgba(249,250,251,0.65);
+      font-size:0.85rem;
+      text-align:center;
+    }
+
+    /* LIGHTBOX */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0,0,0,0.82);
+  backdrop-filter: blur(10px);
+}
+
+.lightbox.open { display: flex; }
+
+.lightbox-inner {
+  width: min(1100px, 96vw);
+  max-height: 90vh;
+  background: rgba(3,7,18,0.80);
+  border: 1px solid rgba(56,189,248,0.25);
+  border-radius: 14px;
+  box-shadow: 0 25px 80px rgba(0,0,0,0.75);
+  overflow: hidden;
+  position: relative;
+}
+
+.lightbox-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.8rem;
+  background: rgba(3,7,18,0.55);
+  border-bottom: 1px dashed rgba(56,189,248,0.25);
+  font-family: "JetBrains Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.72rem;
+  color: rgba(249,250,251,0.80);
+}
+
+.lightbox-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lightbox-close {
+  border: 1px solid rgba(56,189,248,0.25);
+  background: rgba(3,7,18,0.55);
+  color: rgba(249,250,251,0.85);
+  border-radius: 999px;
+  padding: 0.25rem 0.55rem;
+  cursor: pointer;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.lightbox-close:hover {
+  border-color: rgba(56,189,248,0.45);
+}
+
+.lightbox-body {
+  display: grid;
+  place-items: center;
+  padding: 0.8rem;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(34,197,94,0.10), transparent 50%),
+    radial-gradient(circle at 85% 90%, rgba(56,189,248,0.10), transparent 55%),
+    rgba(0,0,0,0.12);
+}
+
+.lightbox-img {
+  width: 100%;
+  height: auto;
+  max-height: 78vh;
+  object-fit: contain;
+  border-radius: 10px;
+  border: 1px solid rgba(34,197,94,0.18);
+  box-shadow: 0 18px 55px rgba(0,0,0,0.65);
+}
+
+.lightbox-nav {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.lightbox-btn {
+  pointer-events: auto;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid rgba(56,189,248,0.25);
+  background: rgba(3,7,18,0.55);
+  color: rgba(249,250,251,0.85);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-family: "JetBrains Mono", monospace;
+}
+
+.lightbox-btn:hover {
+  border-color: rgba(56,189,248,0.45);
+}
+
+.lightbox-prev { left: 12px; }
+.lightbox-next { right: 12px; }
+
+@media (max-width: 640px) {
+  .lightbox-prev { left: 8px; }
+  .lightbox-next { right: 8px; }
+}
+
+
+  </style>
+</head>
+
+<!-- LIGHTBOX (click-to-zoom gallery) -->
+<div class="lightbox" id="lightbox" aria-hidden="true">
+  <div class="lightbox-inner" role="dialog" aria-modal="true" aria-label="Image viewer">
+    <div class="lightbox-topbar">
+      <div class="lightbox-title" id="lightboxTitle">Image</div>
+      <button class="lightbox-close" id="lightboxClose" type="button">close ✕</button>
+    </div>
+
+    <div class="lightbox-body" id="lightboxBody">
+      <img class="lightbox-img" id="lightboxImg" src="" alt="" />
+    </div>
+
+    <div class="lightbox-nav">
+      <button class="lightbox-btn lightbox-prev" id="lightboxPrev" type="button" aria-label="Previous image">←</button>
+      <button class="lightbox-btn lightbox-next" id="lightboxNext" type="button" aria-label="Next image">→</button>
+    </div>
+  </div>
+</div>
+
+<body>
+  <div class="wave-overlay" aria-hidden="true">
+    <svg viewBox="0 0 1200 700" preserveAspectRatio="none">
+      <path class="wave-path" d="M0,360 C 120,280 240,440 360,360 C 480,280 600,440 720,360 C 840,280 960,440 1080,360 C 1140,320 1170,300 1200,320" />
+      <path class="wave-path-2" d="M0,420 C 140,380 220,460 360,420 C 500,380 580,460 720,420 C 860,380 940,460 1080,420 C 1140,410 1170,400 1200,410" />
+    </svg>
+  </div>
+
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="logo">JERRY-LAB <span class="badge">project</span></div>
+      <div class="topnav">
+        <a href="index.html">home</a>
+        <a href="#overview">overview</a>
+        <a href="#build">build</a>
+        <a href="#testing">testing</a>
+        <a href="#gallery">gallery</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="header">
+      <div class="banner">
+        <div class="title-row">
+          <h1>Digital Logic Trainer (Gate IC Trainer)</h1>
+          <div class="status"><span class="dot"></span> status · completed</div>
+        </div>
+        <div class="subtitle">
+          This was my first hardware project that I designed and built in my <b>Manufacturing</b> class.
+          I later used it in my <b>Digital Systems</b> class to interact with and test digital logic gate ICs.
+        </div>
+      </div>
+
+      <div class="body">
+        <!-- LEFT: SUMMARY -->
+        <div class="box">
+          <div class="box-title">
+            <span>project card</span>
+            <a class="btn" href="index.html">← back</a>
+          </div>
+
+          <div class="box-content" id="overview">
+            <div class="pillrow">
+              <span class="pill">🧠 <strong>focus:</strong> digital logic</span>
+              <span class="pill">🧰 <strong>type:</strong> trainer</span>
+              <span class="pill">💡 <strong>outputs:</strong> LEDs</span>
+              <span class="pill">🎚️ <strong>inputs:</strong> switches</span>
+              <span class="pill">📦 <strong>enclosure:</strong> finished</span>
+            </div>
+
+            <div class="section">
+              <h2>What it does</h2>
+              <ul class="list">
+                <li>Provides 5V + GND rails for logic IC testing</li>
+                <li>Lets me set input states using switches</li>
+                <li>Shows output states using LED indicators</li>
+                <li>Makes truth tables feel “real” (hands-on testing)</li>
+              </ul>
+            </div>
+
+            <div class="section">
+              <h2>Project status</h2>
+              <p>
+                <b>Completed.</b> 
+              </p>
+            </div>
+
+            <div class="codebox" style="margin-top:0.9rem;">
+              <div><span class="prompt">jerry@lab</span>:~$ summary</div>
+              <div style="margin-top:.5rem;">
+                first build → manufacturing class<br/>
+                used later → digital systems class<br/>
+                real switches + LEDs → real logic behavior
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: DETAILS -->
+        <div class="box">
+          <div class="box-title">
+            <span class="glow">project details</span>
+            <span style="opacity:.75;font-family:'JetBrains Mono',monospace;font-size:.72rem;">build log</span>
+          </div>
+
+          <div class="box-content">
+            <div class="section" id="build">
+              <h2>Build steps</h2>
+              <ol class="list">
+                <li><b>Planned the layout:</b> inputs (switches), IC area, outputs (LEDs), power.</li>
+                <li><b>Mounted hardware:</b> drilled the enclosure and installed switches + LEDs.</li>
+                <li><b>Built the PCB / wiring:</b> connected rails, inputs, and output indicators cleanly.</li>
+                <li><b>Tested continuity:</b> checked for shorts and confirmed power/ground paths.</li>
+                <li><b>Verified logic behavior:</b> inserted gate ICs and tested truth tables.</li>
+                <li><b>Final assembly:</b> secured the board inside the enclosure and confirmed stable operation.</li>
+              </ol>
+
+              <div class="codebox">
+                <div><span class="prompt">note</span></div>
+                <div style="margin-top:.5rem;">
+                  The goal was a clean, reusable trainer that lets me test logic IC behavior quickly
+                  without rebuilding the circuit every time.
+                </div>
+              </div>
+            </div>
+
+            <div class="section" id="testing">
+              <h2>Testing / verification</h2>
+              <ul class="list">
+                <li><b>Power check:</b> confirmed 5V rail is stable.</li>
+                <li><b>Input check:</b> each switch reliably produces LOW/HIGH states.</li>
+                <li><b>Output check:</b> LEDs reflect output correctly (truth table testing).</li>
+                <li><b>Repeatability:</b> swapped ICs and re-tested to confirm it’s consistent.</li>
+              </ul>
+
+              <div class="codebox">
+                <div><span class="prompt">example test</span></div>
+                <div style="margin-top:.5rem;">
+                  AND gate (A,B → Y): 00→0, 01→0, 10→0, 11→1
+                </div>
+              </div>
+            </div>
+
+            <div class="section" id="gallery">
+              <h2>Gallery (9 photos)</h2>
+              <p style="color: rgba(249,250,251,0.82);">
+                Put your images in an <b>images/</b> folder next to this file, then rename these <b>src</b> paths.
+                Example: <code>images/pcb-1.jpg</code>
+              </p>
+
+              <div class="gallery">
+                <figure>
+                  <img src="images/digital-trainer-01.jpg" alt="PCB photo 1" />
+                  <figcaption><b>PCB:</b> close-up of the board (angle 1).</figcaption>
+                </figure>
+
+                <figure>
+                  <img src="images/digital-trainer-02.jpg" alt="PCB photo 2" />
+                  <figcaption><b>PCB:</b> close-up of the board (angle 2).</figcaption>
+                </figure>
+
+                 <figure>
+                  <img src="images/digital-trainer-03.jpg" alt="PCB photo 3" />
+                  <figcaption><b>PCB:</b> components / routing detail.</figcaption>
+                </figure> 
+
+
+
+                <figure>
+                  <img src="images/digital-trainer-05.jpg" alt="Enclosure photo 2" />
+                  <figcaption><b>Enclosure:</b> internal wiring / placement.</figcaption>
+                </figure>
+
+
+
+                <figure>
+                  <img src="images/digital-trainer-09.jpg" alt="Finished product photo 3" />
+                  <figcaption><b>Finished:</b> final full build shot.</figcaption>
+                </figure>
+              </div>
+            </div>
+
+            <div class="footer">© <span id="year"></span> Jerry-Lab · Digital Logic Trainer</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    
+  // LIGHTBOX
+  const lb = document.getElementById("lightbox");
+  const lbImg = document.getElementById("lightboxImg");
+  const lbTitle = document.getElementById("lightboxTitle");
+  const lbClose = document.getElementById("lightboxClose");
+  const lbPrev = document.getElementById("lightboxPrev");
+  const lbNext = document.getElementById("lightboxNext");
+
+  const imgs = Array.from(document.querySelectorAll(".lb-img"));
+  let currentIndex = 0;
+
+  function openLightbox(index) {
+    currentIndex = index;
+    const img = imgs[currentIndex];
+    lbImg.src = img.src;
+    lbImg.alt = img.alt || "Gallery image";
+    lbTitle.textContent = img.alt || `Image ${currentIndex + 1}`;
+    lb.classList.add("open");
+    lb.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeLightbox() {
+    lb.classList.remove("open");
+    lb.setAttribute("aria-hidden", "true");
+    lbImg.src = "";
+    document.body.style.overflow = "";
+  }
+
+  function showNext() {
+    if (!imgs.length) return;
+    openLightbox((currentIndex + 1) % imgs.length);
+  }
+
+  function showPrev() {
+    if (!imgs.length) return;
+    openLightbox((currentIndex - 1 + imgs.length) % imgs.length);
+  }
+
+  // Click any gallery image
+  imgs.forEach((img, idx) => {
+    img.style.cursor = "zoom-in";
+    img.addEventListener("click", () => openLightbox(idx));
+  });
+
+  // Close button
+  lbClose.addEventListener("click", closeLightbox);
+
+  // Click outside image to close
+  lb.addEventListener("click", (e) => {
+    const clickedInside = e.target.closest(".lightbox-inner");
+    if (!clickedInside) closeLightbox();
+  });
+
+  // Prev/Next buttons
+  lbNext.addEventListener("click", (e) => { e.stopPropagation(); showNext(); });
+  lbPrev.addEventListener("click", (e) => { e.stopPropagation(); showPrev(); });
+
+  // Keyboard controls
+  document.addEventListener("keydown", (e) => {
+    if (!lb.classList.contains("open")) return;
+    if (e.key === "Escape") closeLightbox();
+    if (e.key === "ArrowRight") showNext();
+    if (e.key === "ArrowLeft") showPrev();
+  });
+
+  </script>
+</body>
+</html>
