@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Jerry-Lab | MQTT Broker (Raspberry Pi)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#050510;
+      --panel: rgba(3,7,18,0.62);
+      --panel2: rgba(10,14,28,0.72);
+      --green:#22c55e;
+      --cyan:#38bdf8;
+      --text:#f9fafb;
+      --muted:#9ca3af;
+      --border: rgba(34,197,94,0.22);
+      --border2: rgba(56,189,248,0.22);
+      --shadow: 0 18px 45px rgba(3,7,18,0.78);
+      color-scheme: dark;
+    }
+    *{ box-sizing:border-box; margin:0; padding:0; }
+    body{
+      font-family:"Space Grotesk", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height:100vh;
+      overflow-x:hidden;
+      line-height:1.6;
+      position:relative;
+    }
+    body::before{
+      content:"";
+      position:fixed; inset:0; z-index:-3; pointer-events:none;
+      background:
+        radial-gradient(circle at 25% 15%, rgba(56,189,248,0.10), transparent 55%),
+        radial-gradient(circle at 80% 85%, rgba(34,197,94,0.10), transparent 55%),
+        linear-gradient(var(--bg), var(--bg));
+    }
+    body::after{
+      content:"";
+      position:fixed; inset:0; z-index:-2; pointer-events:none;
+      opacity:0.22;
+      background-image:
+        linear-gradient(to right, rgba(34,197,94,0.22) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(34,197,94,0.22) 1px, transparent 1px);
+      background-size: 64px 64px;
+      filter: drop-shadow(0 0 12px rgba(34,197,94,0.12));
+    }
+    .wave-overlay{ position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:0.55; mix-blend-mode:screen; }
+    .wave-overlay svg{ width:100%; height:100%; display:block; }
+    .wave-path{
+      stroke: rgba(34,197,94,0.88); stroke-width:2.3; fill:none;
+      filter: drop-shadow(0 0 10px rgba(34,197,94,0.35));
+      stroke-dasharray: 18 10; animation: dash 2.4s linear infinite;
+      stroke-linecap:round; stroke-linejoin:round;
+    }
+    .wave-path-2{
+      stroke: rgba(56,189,248,0.55); stroke-width:1.5; fill:none;
+      filter: drop-shadow(0 0 10px rgba(56,189,248,0.25));
+      stroke-dasharray: 10 14; animation: dash 3.1s linear infinite reverse;
+      stroke-linecap:round; stroke-linejoin:round;
+    }
+    @keyframes dash{ to{ stroke-dashoffset:-220; } }
+
+    a{ color:var(--cyan); text-decoration:none; }
+    a:hover{ text-decoration:underline; }
+
+    .topbar{
+      position:sticky; top:0; z-index:10;
+      backdrop-filter: blur(14px);
+      background: rgba(3,7,18,0.65);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 10px 28px rgba(3,7,18,0.6);
+    }
+    .topbar-inner{
+      max-width: 1100px; margin: 0 auto; padding: 0.8rem 1.2rem;
+      display:flex; align-items:center; justify-content:space-between; gap:1rem;
+    }
+    .logo{
+      font-family:"JetBrains Mono", monospace;
+      letter-spacing:0.18em; text-transform:uppercase;
+      font-size:0.85rem; color:var(--green);
+      display:flex; gap:0.7rem; align-items:baseline;
+    }
+    .logo span.badge{
+      font-size:0.7rem; color: rgba(249,250,251,0.75);
+      border: 1px solid rgba(56,189,248,0.25);
+      padding: 0.12rem 0.5rem; border-radius:999px;
+      background: rgba(10,14,28,0.55);
+    }
+    .topnav{
+      display:flex; flex-wrap:wrap; gap:0.8rem;
+      font-family:"JetBrains Mono", monospace;
+      font-size:0.72rem; text-transform:uppercase;
+      letter-spacing:0.14em;
+      color: rgba(249,250,251,0.78);
+    }
+    .topnav a{
+      color: rgba(249,250,251,0.78);
+      padding: 0.2rem 0.35rem; border-radius: 6px;
+      border: 1px solid transparent;
+    }
+    .topnav a:hover{
+      border-color: rgba(56,189,248,0.25);
+      background: rgba(10,14,28,0.55);
+      text-decoration:none;
+    }
+
+    .wrap{ max-width:1100px; margin: 1.3rem auto 3rem; padding: 0 1.2rem; }
+
+    .header{
+      background: var(--panel);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      border-radius: 14px;
+      overflow:hidden;
+    }
+    .banner{
+      padding: 1.1rem 1.1rem 1rem;
+      background:
+        linear-gradient(90deg, rgba(34,197,94,0.12), rgba(56,189,248,0.10)),
+        rgba(3,7,18,0.40);
+      border-bottom: 1px solid rgba(34,197,94,0.18);
+    }
+    .title-row{
+      display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:0.8rem;
+    }
+    h1{ font-size:1.45rem; line-height:1.1; text-shadow: 0 0 16px rgba(34,197,94,0.10); }
+    .status{
+      font-family:"JetBrains Mono", monospace;
+      font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase;
+      color: rgba(249,250,251,0.78);
+      display:flex; gap:0.5rem; align-items:center;
+    }
+    .dot{ width:9px; height:9px; border-radius:50%; background: var(--green); box-shadow:0 0 12px rgba(34,197,94,0.55); }
+    .subtitle{ margin-top:0.6rem; color: rgba(249,250,251,0.80); max-width: 62rem; }
+    .subtitle b{ color: var(--cyan); }
+
+    .body{
+      padding: 1.1rem;
+      display:grid; gap: 1rem;
+      grid-template-columns: 330px 1fr;
+    }
+    @media (max-width: 900px){ .body{ grid-template-columns:1fr; } }
+
+    .box{
+      background: var(--panel2);
+      border: 1px solid rgba(56,189,248,0.18);
+      border-radius: 12px;
+      box-shadow: 0 16px 36px rgba(3,7,18,0.65);
+      overflow:hidden;
+    }
+    .box-title{
+      font-family:"JetBrains Mono", monospace;
+      font-size:0.8rem; letter-spacing:0.14em; text-transform:uppercase;
+      padding: 0.65rem 0.8rem;
+      border-bottom: 1px dashed rgba(56,189,248,0.25);
+      background: rgba(3,7,18,0.35);
+      display:flex; align-items:center; justify-content:space-between; gap:0.8rem;
+    }
+    .box-title .glow{ color: var(--green); text-shadow:0 0 12px rgba(34,197,94,0.35); }
+    .box-content{ padding: 0.85rem 0.9rem 1rem; }
+
+    .pillrow{ display:flex; flex-wrap:wrap; gap:0.45rem; }
+    .pill{
+      display:inline-flex; align-items:center; gap:0.4rem;
+      font-family:"JetBrains Mono", monospace;
+      font-size:0.72rem;
+      color: rgba(249,250,251,0.85);
+      border: 1px solid rgba(34,197,94,0.20);
+      background: rgba(3,7,18,0.50);
+      padding: 0.22rem 0.55rem;
+      border-radius:999px;
+    }
+    .pill strong{ color: var(--cyan); font-weight:600; }
+
+    .statgrid{
+      display:grid; grid-template-columns:1fr 1fr; gap:0.55rem;
+      margin-top:0.75rem;
+      font-family:"JetBrains Mono", monospace;
+      font-size:0.75rem;
+      color: rgba(249,250,251,0.80);
+    }
+    .stat{
+      border: 1px solid rgba(34,197,94,0.18);
+      background: rgba(3,7,18,0.45);
+      border-radius: 10px;
+      padding: 0.55rem 0.6rem;
+    }
+    .stat .k{ color: var(--muted); font-size:0.68rem; letter-spacing:0.10em; text-transform:uppercase; }
+    .stat .v{ margin-top:0.2rem; color: rgba(249,250,251,0.92); }
+
+    .section{ margin-top:0.9rem; }
+    .section h2{ font-size:1.05rem; margin-bottom:0.45rem; }
+    .section p{ color: rgba(249,250,251,0.82); }
+
+    .codebox{
+      margin-top:0.75rem;
+      font-family:"JetBrains Mono", monospace;
+      font-size:0.82rem;
+      background: rgba(0,0,0,0.22);
+      border: 1px solid rgba(34,197,94,0.22);
+      border-radius: 12px;
+      padding: 0.8rem;
+      color: rgba(249,250,251,0.90);
+      overflow:auto;
+    }
+    .prompt{ color: var(--green); }
+
+    .list{
+      margin-top:0.5rem;
+      padding-left: 1.1rem;
+      color: rgba(249,250,251,0.85);
+    }
+    .list li{ margin: 0.25rem 0; }
+
+    .btn{
+      display:inline-flex; align-items:center; gap:0.5rem;
+      font-family:"JetBrains Mono", monospace;
+      font-size:0.78rem;
+      letter-spacing:0.12em;
+      text-transform:uppercase;
+      border: 1px solid rgba(56,189,248,0.22);
+      background: rgba(3,7,18,0.55);
+      padding: 0.35rem 0.65rem;
+      border-radius:999px;
+    }
+    .btn:hover{ text-decoration:none; border-color: rgba(56,189,248,0.38); }
+
+    .footer{
+      margin-top: 1.25rem;
+      color: rgba(249,250,251,0.65);
+      font-size:0.85rem;
+      text-align:center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wave-overlay" aria-hidden="true">
+    <svg viewBox="0 0 1200 700" preserveAspectRatio="none">
+      <path class="wave-path" d="M0,360 C 120,280 240,440 360,360 C 480,280 600,440 720,360 C 840,280 960,440 1080,360 C 1140,320 1170,300 1200,320" />
+      <path class="wave-path-2" d="M0,420 C 140,380 220,460 360,420 C 500,380 580,460 720,420 C 860,380 940,460 1080,420 C 1140,410 1170,400 1200,410" />
+    </svg>
+  </div>
+
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="logo">JERRY-LAB <span class="badge">project</span></div>
+      <div class="topnav">
+        <a href="index.html">home</a>
+        <a href="#overview">overview</a>
+        <a href="#architecture">architecture</a>
+        <a href="#commands">commands</a>
+        <a href="#next">next</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="header">
+      <div class="banner">
+        <div class="title-row">
+          <h1>MQTT Broker (Raspberry Pi · Mosquitto)</h1>
+          <div class="status"><span class="dot"></span> running · lab mode</div>
+        </div>
+        <div class="subtitle">
+          A Raspberry Pi Mosquitto broker that receives ESP32 sensor data and makes it easy to build
+          dashboards + logs. Built like a <b>home-lab messaging backbone</b>.
+        </div>
+      </div>
+
+      <div class="body">
+        <!-- LEFT -->
+        <div class="box">
+          <div class="box-title">
+            <span>project card</span>
+            <a class="btn" href="index.html">← back</a>
+          </div>
+          <div class="box-content">
+            <div class="pillrow">
+              <span class="pill">🧠 <strong>focus:</strong> IoT messaging</span>
+              <span class="pill">🧰 <strong>stack:</strong> Mosquitto</span>
+              <span class="pill">🧪 <strong>mode:</strong> test + log</span>
+              <span class="pill">🔒 <strong>goal:</strong> secure + reliable</span>
+            </div>
+
+            <div class="statgrid">
+              <div class="stat"><div class="k">broker</div><div class="v">mosquitto</div></div>
+              <div class="stat"><div class="k">host</div><div class="v">raspberry pi</div></div>
+              <div class="stat"><div class="k">clients</div><div class="v">esp32 + python</div></div>
+              <div class="stat"><div class="k">data</div><div class="v">sensor topics</div></div>
+            </div>
+
+            <div class="section" id="overview">
+              <h2>Why I built it</h2>
+              <p>
+                I wanted a clean “center point” for my sensors. Instead of random serial prints everywhere,
+                MQTT lets every device publish to a topic, and any dashboard can subscribe.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT -->
+        <div class="box">
+          <div class="box-title"><span class="glow">project details</span><span style="opacity:.75;font-family:'JetBrains Mono',monospace;font-size:.72rem;">signal path</span></div>
+          <div class="box-content">
+
+            <div class="section" id="architecture">
+              <h2>Architecture</h2>
+              <ul class="list">
+                <li><b>ESP32</b> publishes sensor readings to topics (ex: <code>sensor/room/temp_c</code>)</li>
+                <li><b>Raspberry Pi</b> runs Mosquitto broker</li>
+                <li><b>Python</b> subscriber logs data (CSV/SQLite) and powers dashboards</li>
+                <li>Future: VPN access so I can monitor from anywhere</li>
+              </ul>
+
+              <div class="codebox">
+                <div><span class="prompt">topic examples</span></div>
+                <div style="margin-top:.5rem;">
+                  sensor/DHT11/temperature_celsius<br/>
+                  sensor/DHT11/humidity<br/>
+                  sensor/TMP102/temp_c<br/>
+                  alerts/doorbell/motion
+                </div>
+              </div>
+            </div>
+
+            <div class="section" id="commands">
+              <h2>Useful commands (quick demo)</h2>
+              <div class="codebox">
+                <div><span class="prompt"># install</span></div>
+                <div>sudo apt update</div>
+                <div>sudo apt install mosquitto mosquitto-clients -y</div>
+                <br/>
+                <div><span class="prompt"># start + enable</span></div>
+                <div>sudo systemctl enable mosquitto</div>
+                <div>sudo systemctl start mosquitto</div>
+                <br/>
+                <div><span class="prompt"># subscribe</span></div>
+                <div>mosquitto_sub -h &lt;pi-ip&gt; -t "sensor/#" -v</div>
+                <br/>
+                <div><span class="prompt"># publish test</span></div>
+                <div>mosquitto_pub -h &lt;pi-ip&gt; -t "sensor/test" -m "hello mqtt"</div>
+              </div>
+            </div>
+
+            <div class="section" id="next">
+              <h2>Next upgrades</h2>
+              <ul class="list">
+                <li>Add usernames/passwords + ACLs (topic permissions)</li>
+                <li>TLS later (certs) for secure publishing</li>
+                <li>Logging service: SQLite + basic web dashboard</li>
+                <li>VPN so I can access broker remotely from school</li>
+              </ul>
+            </div>
+
+            <div class="footer">Jerry-Lab · MQTT backbone · oscilloscope aesthetic: ON</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>
