@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ESP32 PCB — Jerry-Lab</title>
+
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;500&display=swap" rel="stylesheet"/>
+
+<style>
+:root{
+  --bg:#020617;
+  --accent:#22c55e;
+  --blue:#38bdf8;
+  --text:#e5e7eb;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+
+body{
+  font-family:"JetBrains Mono",monospace;
+  color:var(--text);
+  background:
+  repeating-linear-gradient(
+    to right,
+    rgba(34,197,94,0.08) 0px,
+    rgba(34,197,94,0.08) 1px,
+    transparent 1px,
+    transparent 60px
+  ),
+  repeating-linear-gradient(
+    to bottom,
+    rgba(34,197,94,0.08) 0px,
+    rgba(34,197,94,0.08) 1px,
+    transparent 1px,
+    transparent 60px
+  ),
+  var(--bg);
+
+  min-height:100vh;
+}
+
+/* SIN WAVE BACKGROUND */
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(900px 200px at 50% 45%, rgba(34,197,94,0.18), transparent 60%);
+  pointer-events:none;
+  z-index:-1;
+}
+
+/* LAYOUT */
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:2rem 1rem;
+  display:grid;
+  grid-template-columns:280px 1fr;
+  gap:1.2rem;
+}
+
+/* OLD INTERNET PROFILE SIDEBAR */
+.profile{
+  border:1px solid rgba(34,197,94,0.35);
+  padding:1rem;
+  background:rgba(2,6,23,0.75);
+}
+
+.profile h2{
+  color:var(--accent);
+  margin-bottom:0.5rem;
+}
+
+.status{
+  font-size:0.8rem;
+  opacity:0.8;
+}
+
+/* CONTENT */
+.content{
+  border:1px solid rgba(56,189,248,0.25);
+  padding:1.2rem;
+  background:rgba(2,6,23,0.65);
+}
+
+.title{
+  font-size:1.3rem;
+  color:var(--blue);
+  margin-bottom:1rem;
+}
+
+.section{
+  margin-bottom:1.4rem;
+}
+
+.section h3{
+  color:var(--accent);
+  margin-bottom:0.4rem;
+}
+
+.gallery{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:0.7rem;
+}
+
+.gallery img{
+  width:100%;
+  border-radius:6px;
+  border:1px solid rgba(34,197,94,0.25);
+  cursor:zoom-in;
+}
+
+/* RETRO TOP BAR */
+.topbar{
+  text-align:center;
+  padding:0.7rem;
+  border-bottom:1px dashed rgba(34,197,94,0.25);
+  margin-bottom:1rem;
+  letter-spacing:0.2em;
+  font-size:0.7rem;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- SIDEBAR -->
+  <div class="profile">
+    <h2>ESP32 PCB</h2>
+    <div class="status">STATUS: WORK IN PROGRESS</div>
+    <br/>
+
+    <p>
+      Teaching myself PCB design by building my own ESP32 board with an
+      integrated temperature sensor.
+    </p>
+
+    <br/>
+    <p>
+      Goal: simplify hardware by removing extra dev-board features like headers
+      and unused components.
+    </p>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="content">
+
+    <div class="topbar">JERRY-LAB HARDWARE PROFILE</div>
+
+    <div class="title">Custom ESP32 PCB — Learning Project</div>
+
+    <div class="section">
+      <h3>Project Overview</h3>
+      <p>
+        This project is a work in progress where I’m teaching myself PCB design
+        by creating my own ESP32 board. The board includes a temperature sensor
+        and is being designed as part of my learning process in hardware layout
+        and embedded systems.
+      </p>
+    </div>
+
+    <div class="section">
+      <h3>My Approach — Working Backwards</h3>
+      <p>
+        I’m working backwards from my existing temperature node used in my MQTT
+        project. Instead of starting small, I began with a full ESP32 dev board
+        design and I’m removing the parts I don’t need, like extra headers and
+        unused features. The goal is to create a cleaner PCB focused only on my
+        temperature node.
+      </p>
+    </div>
+
+    <div class="section">
+      <h3>Connection to My MQTT System</h3>
+      <p>
+        This custom board will eventually replace my dev board and act as a
+        dedicated temperature sensor node that sends data to my Raspberry Pi
+        MQTT broker.
+      </p>
+    </div>
+
+    <div class="section">
+      <h3>Development Gallery</h3>
+
+      <div class="gallery">
+        <!-- REPLACE WITH YOUR REAL IMAGES -->
+        <img src="images/esp321.png"/>
+        <img src="images/esp32.1.png"/>
+        <img src="images/esp32.2.png"/>
+        
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
